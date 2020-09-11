@@ -57,21 +57,6 @@ for s:setting in ['omnifunc', 'completefunc']
 	endif
 endfor
 
-" Take all directories of the CLOJURE_SOURCE_DIRS environment variable
-" and add them to the path option.
-"
-" This is a legacy option for VimClojure users.
-if exists('$CLOJURE_SOURCE_DIRS')
-	for s:dir in split($CLOJURE_SOURCE_DIRS, (has("win32") || has("win64")) ? ';' : ':')
-		let s:dir = fnameescape(s:dir)
-		" Whitespace escaping for Windows
-		let s:dir = substitute(s:dir, '\', '\\\\', 'g')
-		let s:dir = substitute(s:dir, '\ ', '\\ ', 'g')
-		execute "setlocal path+=" . s:dir . "/**"
-	endfor
-	let b:undo_ftplugin .= ' | setlocal path<'
-endif
-
 " Skip brackets in ignored syntax regions when using the % command
 if exists('loaded_matchit')
 	let b:match_words = &matchpairs
