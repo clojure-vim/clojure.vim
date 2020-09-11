@@ -1,7 +1,29 @@
+Clojure.vim is licenced under the same terms as Vim using the Vim Licence.
+
+    syntax/clojure.vim:
+
+        Copyright © 2008–2012, Meikel Brandmeyer <mb@kotka.de>
+        Copyright © 2007–2008, Toralf Wittner <toralf.wittner@gmail.com>
+
+    ftdetect/clojure.vim,
+    ftplugin/clojure.vim,
+    indent/clojure.vim:
+
+        Copyright © 2008–2012, Meikel Brandmeyer <mb@kotka.de>
+
+    Modified and relicensed under the Vim License for distribution with Vim:
+
+        Copyright © 2013–2017, Sung Pae <self@sungpae.com>
+
+------------------------------------------------------------------------------
+
 VimClojure License
 ==================
 
-Copyright 2008-2012 (c) Meikel Brandmeyer.
+    (Original license.)
+
+Copyright © 2008–2012, Meikel Brandmeyer.
+
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,15 +41,16 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 
 vim-clojure-static License
 ==========================
 
-Copyright 2013-2014 (c) Sung Pae.
+    (Relicensed for distribution with Vim.)
 
-Relicensed under the Vim License (below) for distribution with Vim.
+Copyright © 2013–2017, Sung Pae.
 
 VIM LICENSE
 

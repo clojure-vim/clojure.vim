@@ -1,59 +1,27 @@
+# Clojure.vim
+
+[Vim][] runtime files for [Clojure][].  This is a fork of
+[vim-clojure-static][].
 
 
-                o8o
-                '"'
-    oooo    ooooooo ooo. .oo.  .oo.
-     `88.  .8' `888 `888P"Y88bP"Y88b
-      `88..8'   888  888   888   888
-       `888'    888  888   888   888
-        `8'    o888oo888o o888o o888o
+## Installation
 
-
-             oooo           o8o
-             `888           '"'
-     .ooooo.  888  .ooooo. oooooooo  oooo oooo d8b .ooooo.
-    d88' `"Y8 888 d88' `88b`888`888  `888 `888""8Pd88' `88b
-    888       888 888   888 888 888   888  888    888ooo888
-    888   .o8 888 888   888 888 888   888  888    888    .o
-    `Y8bod8P'o888o`Y8bod8P' 888 `V88V"V8P'd888b   `Y8bod8P'
-                            888
-                        .o. 88P
-                 .      `Y888P  .   o8o
-               .o8            .o8   '"'
-      .oooo.o.o888oo .oooo. .o888oooooo  .ooooo.
-     d88(  "8  888  `P  )88b  888  `888 d88' `"Y8
-     `"Y88b.   888   .oP"888  888   888 888
-     o.  )88b  888 .d8(  888  888 . 888 888   .o8
-     8""888P'  "888"`Y888""8o "888"o888o`Y8bod8P'
-
-
-
-Meikel Brandmeyer's excellent Clojure runtime files, extracted from the
-[VimClojure](http://www.vim.org/scripts/script.php?script_id=2501) project for
-use with alternate Clojure REPL plugins.
-
-These files ship with Vim versions 7.3.803 and later, and are periodically
+These files ship with Vim version 7.3.803 and later and are periodically
 merged into the official Vim repository.
 
-Installation
-============
-
 If you are running an old version of Vim or if you would like to keep up with
-development, you can install this repository like a standard Vim plugin.
+the latest changes, you can install this repository as you would any other Vim
+plugin.
 
-If you are unfamiliar with this process, refer to
-the [Pathogen](https://github.com/tpope/vim-pathogen) project.
-
-Please make sure that the following options are set in your vimrc to enable
-all features:
+Make sure that the following options are set in your vimrc so that all
+features are enabled:
 
 ```vim
 syntax on
 filetype plugin indent on
 ```
 
-Features
-========
+## Features
 
 * [Augmentable](#syntax-options) syntax highlighting for Clojure and
   ClojureScript buffers.
@@ -70,8 +38,10 @@ Features
 If you install this project as a plugin, `*.edn` files are recognized as a
 Clojure filetype, overriding the built-in declaration as `edif`.
 
-Third Party Extensions
-======================
+<!--
+TODO: update and move to wiki pages.
+
+## Third Party Extensions
 
 * Rainbow Parentheses
 
@@ -87,15 +57,16 @@ Third Party Extensions
   This is a reimplementation of the DynamicHighlighting feature from
   VimClojure.
 
-Clojure REPL Plugins
-====================
+## Clojure REPL Plugins
 
 If you would like to get more serious about programming in Clojure, consider
 using an interactive
 [Clojure REPL plugin](https://github.com/guns/vim-clojure-static/wiki/Clojure-REPL-Plugins).
+-->
 
-Syntax Options
-==============
+## Configuration
+
+### Syntax Options
 
 Syntax highlighting for public vars from `clojure.core` is provided by
 default, but any symbol can be matched and highlighted by adding it to the
@@ -123,8 +94,7 @@ namespaces that have set `(:refer-clojure :only [])`.
 [`vim-clojure-highlight`](https://github.com/guns/vim-clojure-highlight) uses
 these variables to highlight extra vars when connected to a REPL.
 
-Indent Options
-==============
+### Indent Options
 
 Clojure indentation differs somewhat from traditional Lisps, due in part to
 the use of square and curly brackets, and otherwise by community convention.
@@ -134,7 +104,7 @@ offers a few configurable options, listed below.
 If the current vim does not include searchpairpos(), the indent script falls
 back to normal `'lisp'` indenting, and the following options are ignored.
 
-### `g:clojure_maxlines`
+#### `g:clojure_maxlines`
 
 Set maximum scan distance of searchpairpos(). Larger values trade performance
 for correctness when dealing with very long forms. A value of 0 will scan
@@ -145,7 +115,7 @@ without limits.
 let g:clojure_maxlines = 100
 ```
 
-### `g:clojure_fuzzy_indent`, `g:clojure_fuzzy_indent_patterns`, `g:clojure_fuzzy_indent_blacklist`
+#### `g:clojure_fuzzy_indent`, `g:clojure_fuzzy_indent_patterns`, `g:clojure_fuzzy_indent_blacklist`
 
 The `'lispwords'` option is a list of comma-separated words that mark special
 forms whose subforms must be indented with two spaces.
@@ -186,7 +156,7 @@ Each candidate word is tested for special treatment in this order:
 3. Return true if word matches a pattern in `g:clojure_fuzzy_indent_patterns`
 4. Return false and indent normally otherwise
 
-### `g:clojure_special_indent_words`
+#### `g:clojure_special_indent_words`
 
 Some forms in Clojure are indented so that every subform is indented only
 two spaces, regardless of `'lispwords'`. If you have a custom construct that
@@ -198,7 +168,7 @@ the default list below.
 let g:clojure_special_indent_words = 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
 ```
 
-### `g:clojure_align_multiline_strings`
+#### `g:clojure_align_multiline_strings`
 
 Align subsequent lines in multiline strings to the column after the opening
 quote, instead of the same column.
@@ -226,7 +196,7 @@ This option is off by default.
 let g:clojure_align_multiline_strings = 0
 ```
 
-### `g:clojure_align_subforms`
+#### `g:clojure_align_subforms`
 
 By default, parenthesized compound forms that look like function calls and
 whose head subform is on its own line have subsequent subforms indented by
@@ -254,10 +224,9 @@ This option is off by default.
 let g:clojure_align_subforms = 0
 ```
 
-Development
-===========
+## Contribute!
 
-Pull requests and patches are strongly encouraged!
+Pull requests are welcome!
 
 A large portion of the syntax file is generated from Clojure code in
 `clj/src/`. Generation of vim code in this fashion is preferred over hand
@@ -266,31 +235,38 @@ crafting of the same.
 There is an incomplete syntax test suite in `clj/test/`. Any additions and
 improvements to these tests are highly appreciated.
 
-License and Acknowledgements
-============================
 
-Many thanks to [Meikel Brandmeyer](http://kotka.de/) for his excellent work on
-making Vim a first class Clojure editor.
+## Acknowledgements
 
-Thanks to [Tim Pope](https://github.com/tpope/) for advice in #vim.
+Clojure.vim is a continuation of [vim-clojure-static][].
 
-`syntax/clojure.vim`
+Vim-clojure-static was created by [Sung Pae](https://github.com/guns) using
+[Meikel Brandmeyer](http://kotka.de/)'s Clojure runtime files from the
+[VimClojure][] project for use with alternate Clojure REPL plugins.
 
-* Copyright 2007-2008 (c) Toralf Wittner <toralf.wittner@gmail.com>
-* Copyright 2008-2012 (c) Meikel Brandmeyer <mb@kotka.de>
+Thanks to [Tim Pope](https://github.com/tpope/) for advice in
+[#vim](https://www.vi-improved.org/).
 
-`ftdetect/clojure.vim`,<br>
-`ftplugin/clojure.vim`,<br>
-`indent/clojure.vim`
 
-* Copyright 2008-2012 (c) Meikel Brandmeyer <mb@kotka.de>
+## License
 
-Modified and relicensed under the Vim License for distribution with Vim:
+Clojure.vim is licensed under the [Vim
+License](http://vimdoc.sourceforge.net/htmldoc/uganda.html#license) for
+distribution with Vim.
 
-* Copyright 2013-2014 (c) Sung Pae <self@sungpae.com>
+- Copyright © 2013–2017, Sung Pae. <self@sungpae.com>
+- Copyright © 2008–2012, Meikel Brandmeyer. <mb@kotka.de>
+- Copyright © 2007–2008, Toralf Wittner. <toralf.wittner@gmail.com>
 
-See LICENSE.txt for more information.
+See [LICENSE](https://github.com/clojure-vim/clojure.vim/blob/master/LICENSE)
+for more details.
 
-<!--
- vim:ft=markdown:et:tw=78:
--->
+
+<!-- Links -->
+
+[vim]: https://www.vim.org
+[vim-clojure-static]: https://github.com/guns/vim-clojure-static
+[vimclojure]: https://www.vim.org/scripts/script.php?script_id=2501
+[clojure]: https://clojure.org
+
+<!-- vim: set tw=79 : -->
