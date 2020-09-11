@@ -1,9 +1,10 @@
 " Vim completion script
-" Language:     Clojure
-" Maintainer:   Sung Pae <self@sungpae.com>
-" URL:          https://github.com/guns/vim-clojure-static
-" License:      Same as Vim
-" Last Change:  %%RELEASE_DATE%%
+" Language:           Clojure
+" Maintainer:         Alex Vear <av@axvr.io>
+" Former Maintainers: Sung Pae <self@sungpae.com>
+" URL:                https://github.com/clojure-vim/clojure.vim
+" License:            Vim (see :h license)
+" Last Change:        %%RELEASE_DATE%%
 
 " -*- COMPLETION WORDS -*-
 " Generated from https://github.com/guns/vim-clojure-static/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj

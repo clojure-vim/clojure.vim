@@ -1,12 +1,11 @@
 " Vim indent file
-" Language:     Clojure
-" Author:       Meikel Brandmeyer <mb@kotka.de>
-" URL:          http://kotka.de/projects/clojure/vimclojure.html
-"
-" Maintainer:   Sung Pae <self@sungpae.com>
-" URL:          https://github.com/guns/vim-clojure-static
-" License:      Same as Vim
-" Last Change:  %%RELEASE_DATE%%
+" Language:           Clojure
+" Maintainer:         Alex Vear <av@axvr.io>
+" Former Maintainers: Sung Pae <self@sungpae.com>
+"                     Meikel Brandmeyer <mb@kotka.de>
+" URL:                https://github.com/clojure-vim/clojure.vim
+" License:            Vim (see :h license)
+" Last Change:        %%RELEASE_DATE%%
 
 if exists("b:did_indent")
 	finish

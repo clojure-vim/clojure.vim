@@ -1,15 +1,13 @@
-" Vim syntax file
-" Language:     Clojure
-" Authors:      Toralf Wittner <toralf.wittner@gmail.com>
-"               modified by Meikel Brandmeyer <mb@kotka.de>
-" URL:          http://kotka.de/projects/clojure/vimclojure.html
-"
-" Contributors: Joel Holdbrooks <cjholdbrooks@gmail.com> (Regexp support, bug fixes)
-"
-" Maintainer:   Sung Pae <self@sungpae.com>
-" URL:          https://github.com/guns/vim-clojure-static
-" License:      Same as Vim
-" Last Change:  %%RELEASE_DATE%%
+" Vim indent file
+" Language:           Clojure
+" Maintainer:         Alex Vear <av@axvr.io>
+" Former Maintainers: Sung Pae <self@sungpae.com>
+"                     Meikel Brandmeyer <mb@kotka.de>
+"                     Toralf Wittner <toralf.wittner@gmail.com>
+" Contributors:       Joel Holdbrooks <cjholdbrooks@gmail.com> (Regexp support, bug fixes)
+" URL:                https://github.com/clojure-vim/clojure.vim
+" License:            Vim (see :h license)
+" Last Change:        %%RELEASE_DATE%%
 
 if exists("b:current_syntax")
 	finish
