@@ -38,31 +38,6 @@ filetype plugin indent on
 If you install this project as a plugin, `*.edn` files are recognized as a
 Clojure filetype, overriding the built-in declaration as `edif`.
 
-<!--
-TODO: update and move to wiki pages.
-
-## Third Party Extensions
-
-* Rainbow Parentheses
-
-  kien's [`rainbow_parentheses.vim`](https://github.com/kien/rainbow_parentheses.vim)
-  is highly recommended.
-
-* Extended Syntax Highlighting
-
-  [`vim-clojure-highlight`](https://github.com/guns/vim-clojure-highlight) is
-  a fireplace.vim plugin that extends syntax highlighting to local, referred,
-  and aliased vars via [`b:clojure_syntax_keywords`](#syntax-options).
-
-  This is a reimplementation of the DynamicHighlighting feature from
-  VimClojure.
-
-## Clojure REPL Plugins
-
-If you would like to get more serious about programming in Clojure, consider
-using an interactive
-[Clojure REPL plugin](https://github.com/guns/vim-clojure-static/wiki/Clojure-REPL-Plugins).
--->
 
 ## Configuration
 
@@ -224,6 +199,13 @@ This option is off by default.
 let g:clojure_align_subforms = 0
 ```
 
+
+## Want to improve your Clojure development set up?
+
+be sure to check out our list of [suggested Vim plugins in the
+Wiki](https://github.com/clojure-vim/clojure.vim/wiki/Plugins).
+
+
 ## Contribute!
 
 Pull requests are welcome!
@@ -238,11 +220,10 @@ improvements to these tests are highly appreciated.
 
 ## Acknowledgements
 
-Clojure.vim is a continuation of [vim-clojure-static][].
-
-Vim-clojure-static was created by [Sung Pae](https://github.com/guns) using
-[Meikel Brandmeyer](http://kotka.de/)'s Clojure runtime files from the
-[VimClojure][] project for use with alternate Clojure REPL plugins.
+[Clojure.vim][] is a continuation of [vim-clojure-static][].
+_Vim-clojure-static_ was created by [Sung Pae](https://github.com/guns).  The
+original copies of the packaged runtime files came from [Meikel
+Brandmeyer](http://kotka.de/)'s [VimClojure][] project with permission.
 
 Thanks to [Tim Pope](https://github.com/tpope/) for advice in
 [#vim](https://www.vi-improved.org/).
@@ -265,6 +246,7 @@ for more details.
 <!-- Links -->
 
 [vim]: https://www.vim.org
+[clojure.vim]: https://github.com/clojure-vim/clojure.vim
 [vim-clojure-static]: https://github.com/guns/vim-clojure-static
 [vimclojure]: https://www.vim.org/scripts/script.php?script_id=2501
 [clojure]: https://clojure.org
