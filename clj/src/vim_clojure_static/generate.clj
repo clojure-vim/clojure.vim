@@ -332,10 +332,11 @@
   "Vimscript literal `setlocal lispwords=` statement."
   (str "setlocal lispwords=" (string/join \, (sort lispwords)) "\n"))
 
-(defn- comprehensive-clojure-character-property-regexps []
+(defn- comprehensive-clojure-character-property-regexps
   "A string representing a Clojure literal vector of regular expressions
    containing all possible property character classes. For testing Vimscript
    syntax matching optimizations."
+  []
   (let [fmt (fn [prefix prop-key]
               (let [props (map (partial format "\\p{%s%s}" prefix)
                                (sort (get character-properties prop-key)))]
@@ -455,6 +456,8 @@
   ;; Generate an example file with all possible character property literals.
   (spit "tmp/all-char-props.clj"
         (comprehensive-clojure-character-property-regexps))
+
+  (require 'vim-clojure-static.test)
 
   ;; Performance test: `syntax keyword` vs `syntax match`
   (vim-clojure-static.test/benchmark

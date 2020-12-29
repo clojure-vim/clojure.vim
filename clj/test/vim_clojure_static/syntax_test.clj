@@ -4,6 +4,9 @@
 (ns vim-clojure-static.syntax-test
   (:require [vim-clojure-static.test :refer [defpredicates defsyntaxtest]]))
 
+;; defpredicates also register not-equal vars, this is just for clj-kondo
+(declare !number !regexp-escape !regexp-posix-char-class !regexp-quantifier)
+
 (defpredicates number :clojureNumber)
 (defpredicates kw :clojureKeyword)
 (defpredicates regexp :clojureRegexp)
