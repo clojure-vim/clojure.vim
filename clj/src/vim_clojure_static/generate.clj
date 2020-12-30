@@ -89,7 +89,7 @@
 ;;
 
 (def generation-comment
-  "\" Generated from https://github.com/guns/vim-clojure-static/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj\n")
+  "\" Generated from https://github.com/clojure-vim/clojure.vim/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj\n")
 
 (def clojure-version-comment
   (format "\" Clojure version %s\n" (clojure-version)))

@@ -21,7 +21,7 @@ if has("folding") && exists("g:clojure_fold") && g:clojure_fold > 0
 endif
 
 " -*- KEYWORDS -*-
-" Generated from https://github.com/guns/vim-clojure-static/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj
+" Generated from https://github.com/clojure-vim/clojure.vim/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj
 " Clojure version 1.10.1
 let s:clojure_syntax_keywords = {
     \   'clojureBoolean': ["false","true"]
@@ -114,7 +114,7 @@ syntax region clojureRegexpQuoted start=/\\Q/ms=e+1 skip=/\\\\\|\\"/ end=/\\E/me
 syntax region clojureRegexpQuote  start=/\\Q/       skip=/\\\\\|\\"/ end=/\\E/       end=/"/me=s-1 contains=clojureRegexpQuoted keepend contained
 
 " -*- CHARACTER PROPERTY CLASSES -*-
-" Generated from https://github.com/guns/vim-clojure-static/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj
+" Generated from https://github.com/clojure-vim/clojure.vim/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj
 " Java version 1.8.0_265
 syntax match clojureRegexpPosixCharClass "\v\\[pP]\{%(Cntrl|A%(l%(pha|num)|SCII)|Space|Graph|Upper|P%(rint|unct)|Blank|XDigit|Digit|Lower)\}" contained display
 syntax match clojureRegexpJavaCharClass "\v\\[pP]\{java%(Whitespace|JavaIdentifier%(Part|Start)|SpaceChar|Mirrored|TitleCase|I%(SOControl|de%(ographic|ntifierIgnorable))|D%(efined|igit)|U%(pperCase|nicodeIdentifier%(Part|Start))|L%(etter%(OrDigit)?|owerCase)|Alphabetic)\}" contained display
@@ -152,7 +152,7 @@ syntax match clojureComment ";.*$" contains=clojureCommentTodo,@Spell
 syntax match clojureComment "#!.*$"
 
 " -*- TOP CLUSTER -*-
-" Generated from https://github.com/guns/vim-clojure-static/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj
+" Generated from https://github.com/clojure-vim/clojure.vim/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj
 syntax cluster clojureTop contains=@Spell,clojureAnonArg,clojureBoolean,clojureCharacter,clojureComment,clojureCond,clojureConstant,clojureDefine,clojureDeref,clojureDispatch,clojureError,clojureException,clojureFunc,clojureKeyword,clojureMacro,clojureMap,clojureMeta,clojureNumber,clojureQuote,clojureRegexp,clojureRepeat,clojureSexp,clojureSpecial,clojureString,clojureSymbol,clojureUnquote,clojureVarArg,clojureVariable,clojureVector
 
 syntax region clojureSexp   matchgroup=clojureParen start="("  end=")" contains=@clojureTop fold
