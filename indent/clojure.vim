@@ -169,7 +169,35 @@ if exists("*searchpairpos")
 
 		call search('\S', 'W')
 		let w = s:strip_namespace_and_macro_chars(s:current_word())
+
 		if g:clojure_special_indent_words =~# '\V\<' . w . '\>'
+
+			" `letfn` is a special-special-case.
+			if w ==# 'letfn'
+				" Earlier code left the cursor at:
+				"     (letfn [...] ...)
+				"      ^
+
+				" Search and get coordinates of first `[`
+				"     (letfn [...] ...)
+				"            ^
+				call search('\[', 'W')
+				let pos = getcurpos()
+				let letfn_bracket = [pos[1], pos[2]]
+
+				" Move cursor to start of the form this function was
+				" initially called on.  Grab the coordinates of the
+				" closest outer `[`.
+				call cursor(a:position)
+				let outer_bracket = s:match_pairs('\[', '\]', 0)
+
+				" If the located square brackets are not the same,
+				" don't use special-case formatting.
+				if outer_bracket != letfn_bracket
+					return 0
+				endif
+			endif
+
 			return 1
 		endif
 
