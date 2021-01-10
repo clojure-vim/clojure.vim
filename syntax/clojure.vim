@@ -146,7 +146,7 @@ syntax match clojureRegexpMod "\v\(@<=\?\<[a-zA-Z]+\>" contained display
 syntax region clojureRegexpGroup start="(" skip=/\\\\\|\\)/ end=")" matchgroup=clojureRegexpGroup contained contains=clojureRegexpMod,clojureRegexpQuantifier,clojureRegexpBoundary,clojureRegexpEscape,@clojureRegexpCharClasses
 syntax region clojureRegexp start=/\#"/ skip=/\\\\\|\\"/ end=/"/ contains=@clojureRegexpCharClasses,clojureRegexpEscape,clojureRegexpQuote,clojureRegexpBoundary,clojureRegexpQuantifier,clojureRegexpOr,clojureRegexpBackRef,clojureRegexpGroup keepend
 
-syntax keyword clojureCommentTodo contained FIXME XXX TODO FIXME: XXX: TODO:
+syntax keyword clojureCommentTodo contained FIXME XXX TODO BUG NOTE HACK FIXME: XXX: TODO: BUG: NOTE: HACK:
 
 syntax match clojureComment ";.*$" contains=clojureCommentTodo,@Spell
 syntax match clojureComment "#!.*$"
