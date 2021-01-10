@@ -208,14 +208,8 @@ Wiki](https://github.com/clojure-vim/clojure.vim/wiki/Plugins).
 
 ## Contribute!
 
-Pull requests are welcome!
-
-A large portion of the syntax file is generated from Clojure code in
-`clj/src/`. Generation of vim code in this fashion is preferred over hand
-crafting of the same.
-
-There is an incomplete syntax test suite in `clj/test/`. Any additions and
-improvements to these tests are highly appreciated.
+Pull requests are welcome!  Make sure to read the
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for useful information.
 
 
 ## Acknowledgements
