@@ -458,9 +458,9 @@
 (defn- update-vim!
   "Update Vim repository runtime files in dst/runtime"
   [src dst]
-  (let [current-tag (string/trim-newline (:out (sh "git" "tag" "--points-at" "HEAD")))
-        current-date (.format (SimpleDateFormat. "dd MMMM YYYY") (Date.))]
-    (assert (seq current-tag) "Git HEAD is not tagged!")
+  (let [current-tag (string/trim-newline (:out (sh "git" "rev-parse" "HEAD")))
+        current-date (.format (SimpleDateFormat. "YYYY-MM-dd") (Date.))]
+    (assert (seq current-tag) "Git HEAD doesn't appear to have a commit hash.")
     (update-doc! #"CLOJURE\t*\*ft-clojure-indent\*"
                  (fjoin src "doc/clojure.txt")
                  (fjoin dst "runtime/doc/indent.txt"))
