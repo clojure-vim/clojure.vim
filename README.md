@@ -1,7 +1,6 @@
 # Clojure.vim
 
-[Vim][] runtime files for [Clojure][].  This is a fork of
-[vim-clojure-static][].
+[Vim][] runtime files for [Clojure][].  This is a fork of [vim-clojure-static][].
 
 
 ## Installation
@@ -34,9 +33,6 @@ filetype plugin indent on
   This is bound to both the `'omnifunc'` and `'completefunc'` options, which
   can be invoked with the insert mode mappings `<C-X><C-O>` and `<C-X><C-U>`
   respectively.
-
-If you install this project as a plugin, `*.edn` files are recognized as a
-Clojure filetype, overriding the built-in declaration as `edif`.
 
 
 ## Configuration
@@ -202,7 +198,7 @@ let g:clojure_align_subforms = 0
 
 ## Want to improve your Clojure development set up?
 
-be sure to check out our list of [suggested Vim plugins in the
+Be sure to check out our list of [suggested Vim plugins in the
 Wiki](https://github.com/clojure-vim/clojure.vim/wiki/Plugins).
 
 
