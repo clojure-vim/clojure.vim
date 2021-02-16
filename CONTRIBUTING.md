@@ -48,7 +48,26 @@ lein test
 
 ## Submit latest changes to upstream Vim
 
-_WIP_
+**Note** this should be done only by the Clojure.vim maintainers, this is here
+to serve as a reminder on how to do it.
+
+```
+$ cd clj/
+$ lein repl
+> (load-file "src/vim_clojure_static/generate.clj")
+> (ns vim-clojure-static.generate)
+> (update-vim! ".." "../../vim")
+```
+
+Open PR in official [Vim repository][], this will automatically send an email
+to the [Vim-dev mailing list](https://www.vim.org/maillist.php#vim-dev) and run
+the CI tests.
+
+More information on how Vim's contribution process works can be found here:
+<https://github.com/vim/vim/blob/master/CONTRIBUTING.md>
+
+Neovim periodically pulls runtime patches from Vim.
 
 
+[Vim repository]: https://github.com/vim/vim
 [Leiningen]: https://leiningen.org/#install
