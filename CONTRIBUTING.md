@@ -19,7 +19,7 @@ special forms.
 ```
 $ cd clj/
 $ lein repl
-> (load-file "src/vim_clojure_static/generate.clj")
+> (require 'vim-clojure-static.generate)
 > (ns vim-clojure-static.generate)
 > (update-project! "..")
 ```
@@ -54,7 +54,7 @@ to serve as a reminder on how to do it.
 ```
 $ cd clj/
 $ lein repl
-> (load-file "src/vim_clojure_static/generate.clj")
+> (require 'vim-clojure-static.generate)
 > (ns vim-clojure-static.generate)
 > (update-vim! ".." "../../vim")
 ```
