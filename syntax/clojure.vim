@@ -68,40 +68,23 @@ delfunction s:syntax_keyword
 "   * Must not end in a : or /
 "   * Must not have two adjacent colons except at the beginning
 "   * Must not contain any reader metacharacters except for ' and #
-syntax match clojureKeyword "\v<:{1,2}%([^ \n\r\t()\[\]{}";@^`~\\%/]+/)*[^ \n\r\t()\[\]{}";@^`~\\%/]+:@<!>"
+syntax match clojureKeyword "\v<:{1,2}%([^ \n\r\t()\[\]{}";@^`~\\%/]+/)*[^ \n\r\t()\[\]{}";@^`~\\%/]+:@1<!>"
 
 syntax match clojureStringEscape "\v\\%([\\btnfr"]|u\x{4}|[0-3]\o{2}|\o{1,2})" contained
 
 syntax region clojureString matchgroup=clojureStringDelimiter start=/"/ skip=/\\\\\|\\"/ end=/"/ contains=clojureStringEscape,@Spell
 
-syntax match clojureCharacter "\\."
-syntax match clojureCharacter "\\o\%([0-3]\o\{2\}\|\o\{1,2\}\)"
-syntax match clojureCharacter "\\u\x\{4\}"
-syntax match clojureCharacter "\\space"
-syntax match clojureCharacter "\\tab"
-syntax match clojureCharacter "\\newline"
-syntax match clojureCharacter "\\return"
-syntax match clojureCharacter "\\backspace"
-syntax match clojureCharacter "\\formfeed"
+syntax match clojureCharacter "\v\\%(o%([0-3]\o{2}|\o{1,2})|u\x{4}|newline|tab|space|return|backspace|formfeed|.)"
 
-syntax match clojureSymbol "\v%([a-zA-Z!$&*_+=|<.>?-]|[^\x00-\x7F])+%(:?%([a-zA-Z0-9!#$%&*_+=|'<.>/?-]|[^\x00-\x7F]))*[#:]@<!"
+syntax match clojureSymbol "\v%([a-zA-Z!$&*_+=|<.>?-]|[^\x00-\x7F])+%(:?%([a-zA-Z0-9!#$%&*_+=|'<.>/?-]|[^\x00-\x7F]))*[#:]@1<!"
 
-let s:radix_chars = "0123456789abcdefghijklmnopqrstuvwxyz"
-for s:radix in range(2, 36)
-	execute 'syntax match clojureNumber "\v\c<[-+]?' . s:radix . 'r[' . strpart(s:radix_chars, 0, s:radix) . ']+>"'
-endfor
-unlet! s:radix_chars s:radix
-
-syntax match clojureNumber "\v<[-+]?%(0\o*|0x\x+|[1-9]\d*)N?>"
-syntax match clojureNumber "\v<[-+]?%(0|[1-9]\d*|%(0|[1-9]\d*)\.\d*)%(M|[eE][-+]?\d+)?>"
-syntax match clojureNumber "\v<[-+]?%(0|[1-9]\d*)/%(0|[1-9]\d*)>"
+" NB. Correct matching of radix literals was removed for better performance.
+syntax match clojureNumber "\v<[-+]?%(%([2-9]|[12]\d|3[0-6])[rR][[:alnum:]]+|%(0\o*|0x\x+|[1-9]\d*)N?|%(0|[1-9]\d*|%(0|[1-9]\d*)\.\d*)%(M|[eE][-+]?\d+)?|%(0|[1-9]\d*)/%(0|[1-9]\d*))>"
 
 syntax match clojureVarArg "&"
 
-syntax match clojureQuote "'"
-syntax match clojureQuote "`"
-syntax match clojureUnquote "\~"
-syntax match clojureUnquote "\~@"
+syntax match clojureQuote "\v['`]"
+syntax match clojureUnquote "\v\~\@?"
 syntax match clojureMeta "\^"
 syntax match clojureDeref "@"
 syntax match clojureDispatch "\v#[\^'=<_]?"
@@ -134,14 +117,14 @@ syntax match   clojureRegexpBoundary            "[$^]" contained display
 syntax match   clojureRegexpQuantifier          "[?*+][?+]\=" contained display
 syntax match   clojureRegexpQuantifier          "\v\{\d+%(,|,\d+)?}\??" contained display
 syntax match   clojureRegexpOr                  "|" contained display
-syntax match   clojureRegexpBackRef             "\v\\%([1-9]\d*|k\<[a-zA-z]+\>)" contained display
+syntax match   clojureRegexpBackRef             "\v\\%([1-9]\d*|k\<[[:alpha:]]+\>)" contained display
 
 " Mode modifiers, mode-modified spans, lookaround, regular and atomic
 " grouping, and named-capturing.
 syntax match clojureRegexpMod "\v\(@<=\?:" contained display
 syntax match clojureRegexpMod "\v\(@<=\?[xdsmiuU]*-?[xdsmiuU]+:?" contained display
 syntax match clojureRegexpMod "\v\(@<=\?%(\<?[=!]|\>)" contained display
-syntax match clojureRegexpMod "\v\(@<=\?\<[a-zA-Z]+\>" contained display
+syntax match clojureRegexpMod "\v\(@<=\?\<[[:alpha:]]+\>" contained display
 
 syntax region clojureRegexpGroup start="(" skip=/\\\\\|\\)/ end=")" matchgroup=clojureRegexpGroup contained contains=clojureRegexpMod,clojureRegexpQuantifier,clojureRegexpBoundary,clojureRegexpEscape,@clojureRegexpCharClasses
 syntax region clojureRegexp start=/\#"/ skip=/\\\\\|\\"/ end=/"/ contains=@clojureRegexpCharClasses,clojureRegexpEscape,clojureRegexpQuote,clojureRegexpBoundary,clojureRegexpQuantifier,clojureRegexpOr,clojureRegexpBackRef,clojureRegexpGroup keepend
