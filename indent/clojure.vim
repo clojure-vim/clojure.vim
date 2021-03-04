@@ -24,7 +24,7 @@ setlocal indentkeys=!,o,O
 if exists("*searchpairpos")
 
 	if !exists('g:clojure_maxlines')
-		let g:clojure_maxlines = 100
+		let g:clojure_maxlines = 300
 	endif
 
 	if !exists('g:clojure_fuzzy_indent')
