@@ -215,9 +215,10 @@ if exists("*searchpairpos")
 	endfunction
 
 	" Check if form is a reader conditional, that is, it is prefixed by #?
-	" or @#?
+	" or #?@
 	function! s:is_reader_conditional_special_case(position)
 		return getline(a:position[0])[a:position[1] - 3 : a:position[1] - 2] == "#?"
+			\|| getline(a:position[0])[a:position[1] - 4 : a:position[1] - 2] == "#?@"
 	endfunction
 
 	" Returns 1 for opening brackets, -1 for _anything else_.
