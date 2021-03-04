@@ -83,7 +83,7 @@ without limits.
 
 ```vim
 " Default
-let g:clojure_maxlines = 100
+let g:clojure_maxlines = 300
 ```
 
 #### `g:clojure_fuzzy_indent`, `g:clojure_fuzzy_indent_patterns`, `g:clojure_fuzzy_indent_blacklist`
