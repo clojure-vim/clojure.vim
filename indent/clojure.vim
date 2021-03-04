@@ -56,7 +56,8 @@ if exists("*searchpairpos")
 	endfunction
 
 	function! s:ignored_region()
-		return s:syn_id_name() =~? '\vstring|regex|comment|character'
+		let name = s:syn_id_name()
+		return (name =~? '\vstring|regex|comment|character') && (name !=# 'clojureCommentReaderMacro')
 	endfunction
 
 	function! s:current_char()
