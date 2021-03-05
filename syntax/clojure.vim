@@ -135,11 +135,11 @@ syntax match clojureComment ";.*$" contains=clojureCommentTodo,@Spell
 syntax match clojureComment "#!.*$"
 
 " Comment forms highlight comment forms as comment.  Based on: <https://git.sr.ht/~evhan/vim-scheme/>
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ \t\n`'~]*/   end=/[ \t\n()\[\]{}";]/me=e-1
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ \t\n`'~]*"/  skip=/\\[\\"]/ end=/"/
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ \t\n`'~]*(/  end=/)/  contains=clojureCommentReaderMacroForm
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ \t\n`'~]*\[/ end=/\]/ contains=clojureCommentReaderMacroForm
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ \t\n`'~]*{/  end=/}/  contains=clojureCommentReaderMacroForm
+syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*/   end=/[, \t\n()\[\]{}";]/me=e-1
+syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*"/  skip=/\\[\\"]/ end=/"/
+syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*(/  end=/)/  contains=clojureCommentReaderMacroForm
+syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*\[/ end=/\]/ contains=clojureCommentReaderMacroForm
+syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*{/  end=/}/  contains=clojureCommentReaderMacroForm
 
 syntax region clojureCommentReaderMacroForm start="("  end=")"  contained contains=clojureCommentReaderMacroForm
 syntax region clojureCommentReaderMacroForm start="{"  end="}"  contained contains=clojureCommentReaderMacroForm
