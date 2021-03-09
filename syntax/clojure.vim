@@ -135,19 +135,19 @@ syntax match clojureComment ";.*$" contains=clojureCommentTodo,@Spell
 syntax match clojureComment "#!.*$"
 
 " Comment forms highlight comment forms as comment.  Based on: <https://git.sr.ht/~evhan/vim-scheme/>
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*/   end=/[, \t\n()\[\]{}";]/me=e-1
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*"/  skip=/\\[\\"]/ end=/"/
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*(/  end=/)/  contains=clojureCommentReaderMacroForm
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*\[/ end=/\]/ contains=clojureCommentReaderMacroForm
-syntax region clojureCommentReaderMacro matchgroup=clojureCommentReaderMacro start=/#_[ ,\t\n`'~]*{/  end=/}/  contains=clojureCommentReaderMacroForm
+syntax region clojureComentReaderMacro matchgroup=clojureComentReaderMacro start=/#_[ ,\t\n`'~]*/   end=/[, \t\n()\[\]{}";]/me=e-1
+syntax region clojureComentReaderMacro matchgroup=clojureComentReaderMacro start=/#_[ ,\t\n`'~]*"/  skip=/\\[\\"]/ end=/"/
+syntax region clojureComentReaderMacro matchgroup=clojureComentReaderMacro start=/#_[ ,\t\n`'~]*(/  end=/)/  contains=clojureComentReaderMacroForm
+syntax region clojureComentReaderMacro matchgroup=clojureComentReaderMacro start=/#_[ ,\t\n`'~]*\[/ end=/\]/ contains=clojureComentReaderMacroForm
+syntax region clojureComentReaderMacro matchgroup=clojureComentReaderMacro start=/#_[ ,\t\n`'~]*{/  end=/}/  contains=clojureComentReaderMacroForm
 
-syntax region clojureCommentReaderMacroForm start="("  end=")"  contained contains=clojureCommentReaderMacroForm
-syntax region clojureCommentReaderMacroForm start="{"  end="}"  contained contains=clojureCommentReaderMacroForm
-syntax region clojureCommentReaderMacroForm start="\[" end="\]" contained contains=clojureCommentReaderMacroForm
+syntax region clojureComentReaderMacroForm start="("  end=")"  contained contains=clojureComentReaderMacroForm
+syntax region clojureComentReaderMacroForm start="{"  end="}"  contained contains=clojureComentReaderMacroForm
+syntax region clojureComentReaderMacroForm start="\[" end="\]" contained contains=clojureComentReaderMacroForm
 
 " -*- TOP CLUSTER -*-
 " Generated from https://github.com/clojure-vim/clojure.vim/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj
-syntax cluster clojureTop contains=@Spell,clojureAnonArg,clojureBoolean,clojureCharacter,clojureComment,clojureCond,clojureConstant,clojureDefine,clojureDeref,clojureDispatch,clojureError,clojureException,clojureFunc,clojureKeyword,clojureMacro,clojureMap,clojureMeta,clojureNumber,clojureQuote,clojureRegexp,clojureRepeat,clojureSexp,clojureSpecial,clojureString,clojureSymbol,clojureUnquote,clojureVarArg,clojureVariable,clojureVector,clojureCommentReaderMacro
+syntax cluster clojureTop contains=@Spell,clojureAnonArg,clojureBoolean,clojureCharacter,clojureComment,clojureCond,clojureConstant,clojureDefine,clojureDeref,clojureDispatch,clojureError,clojureException,clojureFunc,clojureKeyword,clojureMacro,clojureMap,clojureMeta,clojureNumber,clojureQuote,clojureRegexp,clojureRepeat,clojureSexp,clojureSpecial,clojureString,clojureSymbol,clojureUnquote,clojureVarArg,clojureVariable,clojureVector,clojureComentReaderMacro
 
 syntax region clojureSexp   matchgroup=clojureParen start="("  end=")" contains=@clojureTop fold
 syntax region clojureVector matchgroup=clojureParen start="\[" end="]" contains=@clojureTop fold
@@ -202,8 +202,8 @@ highlight default link clojureDispatch                  SpecialChar
 
 highlight default link clojureComment                   Comment
 highlight default link clojureCommentTodo               Todo
-highlight default link clojureCommentReaderMacro        clojureComment
-highlight default link clojureCommentReaderMacroForm    clojureCommentReaderMacro
+highlight default link clojureComentReaderMacro         clojureComment
+highlight default link clojureComentReaderMacroForm     clojureComentReaderMacro
 
 highlight default link clojureError                     Error
 
