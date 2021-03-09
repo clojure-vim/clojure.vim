@@ -57,7 +57,7 @@ if exists("*searchpairpos")
 
 	function! s:ignored_region()
 		let name = s:syn_id_name()
-		return (name =~? '\vstring|regex|comment|character') && (name !=# 'clojureCommentReaderMacro')
+		return (name =~? '\vstring|regex|comment|character') && (name !~# '^clojureCommentReaderMacro\(Form\)\?$')
 	endfunction
 
 	function! s:current_char()
