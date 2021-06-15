@@ -8,10 +8,9 @@
             [clojure.string :as string]
             [clojure.data.csv :as csv]
             [frak :as f])
-  (:import (clojure.lang MultiFn)
-           (java.text SimpleDateFormat)
-           (java.util Date)
-           (java.util.regex Pattern)))
+  (:import [clojure.lang MultiFn Compiler]
+           java.text.SimpleDateFormat
+           java.util.Date))
 
 ;;
 ;; Helpers
@@ -39,25 +38,18 @@
            (name group)
            (property-pattern (format fmt (vim-frak-pattern props)) braces?))))
 
-(defn- fn-var? [v]
-  (let [f @v]
-    (or (contains? (meta v) :arglists)
-        (fn? f)
-        (instance? MultiFn f))))
-
-(defn- map-keyword-names [coll]
-  (reduce
-    (fn [v x]
-      ;; Include fully qualified versions of core vars for matching vars in
-      ;; macroexpanded forms
-      (cond (symbol? x) (if-let [m (meta (resolve x))]
-                          (conj v
-                                (str (:name m))
-                                (str (:ns m) \/ (:name m)))
-                          (conj v (str x)))
-            (nil? x) (conj v "nil")
-            :else (conj v (str x))))
-    [] coll))
+(defn- map-keyword-names
+  "Add non fully-qualified versions of the clojure.core functions and stringify everything."
+  [coll]
+  (let [stringified
+        (into #{}
+              (map #(if (nil? %) "nil" (str %)))
+              coll)
+        bare-symbols
+        (into #{}
+              (map #(string/replace-first % #"^clojure\.core/(?!import\*$)" ""))
+              stringified)]
+    (set/union stringified bare-symbols)))
 
 (defn- vim-top-cluster
   "Generate a Vimscript literal `syntax cluster` statement for `groups` and
@@ -85,37 +77,64 @@
 (def java-version-comment
   (format "\" Java version %s\n" (System/getProperty "java.version")))
 
-(def special-forms
-  "http://clojure.org/special_forms"
-  '#{def if do let quote var fn loop recur throw try catch finally
-     monitor-enter monitor-exit . new set!})
+(defn vars-in-ns [ns]
+  (->> ns
+       ns-publics
+       (map (fn [[_ var]]
+              (assoc (meta var)
+                     :var var
+                     :fqs (symbol var))))))
+
+(defn ->fqs [vars]
+  (into #{} (map :fqs) vars))
+
+(defn multi-fn? [v]
+  (instance? MultiFn (var-get (:var v))))
+
+(defn function? [v]
+  (or
+    (and (nil? (:macro v))
+         (contains? v :arglists))
+    (multi-fn? v)))
+
+(defn variable? [v]
+  (nil? (or (:macro v)
+            (:special-form v)
+            (:arglists v)
+            (:inline v))))
+
+(defn define? [v]
+  (re-find #"([^/]*/)?\Af?def(?!ault)"
+           (str (if (map? v) (:name v) v))))
 
 (def keyword-groups
   "Special forms, constants, and every public var in clojure.core keyed by
    syntax group name."
-  (let [exceptions '#{throw try catch finally}
-        builtins {"clojureConstant" '#{nil}
-                  "clojureBoolean" '#{true false}
-                  "clojureSpecial" (apply disj special-forms exceptions)
-                  "clojureException" exceptions
-                  "clojureCond" '#{case cond cond-> cond->> condp if-let
-                                   if-not if-some when when-first when-let
-                                   when-not when-some}
-                  ;; Imperative looping constructs (not sequence functions)
-                  "clojureRepeat" '#{doseq dotimes while}}
-        coresyms (set/difference (set (keys (ns-publics 'clojure.core)))
-                                 (set (mapcat peek builtins)))
-        group-preds [["clojureDefine" #(re-seq #"\Adef(?!ault)" (str %))]
-                     ["clojureMacro" #(:macro (meta (ns-resolve 'clojure.core %)))]
-                     ["clojureFunc" #(fn-var? (ns-resolve 'clojure.core %))]
-                     ["clojureVariable" identity]]]
-    (first
-      (reduce
-        (fn [[m syms] [group pred]]
-          (let [group-syms (set (filterv pred syms))]
-            [(assoc m group group-syms)
-             (set/difference syms group-syms)]))
-        [builtins coresyms] group-preds))))
+  (let [vars (vars-in-ns 'clojure.core)
+        compiler-specials (set (keys Compiler/specials))
+        exceptions   '#{throw try catch finally}
+        repeat       '#{recur loop* clojure.core/loop clojure.core/doseq clojure.core/dotimes clojure.core/while}
+        conditionals '#{case* clojure.core/case
+                        if clojure.core/if-not clojure.core/if-let clojure.core/if-some
+                        clojure.core/cond clojure.core/cond-> clojure.core/cond->> clojure.core/condp
+                        clojure.core/when clojure.core/when-first clojure.core/when-let clojure.core/when-not clojure.core/when-some}
+        define    (set/union (->fqs (filter define? vars))
+                             (set (filter define? compiler-specials)))
+        macros    (->fqs (filter :macro vars))
+        functions (->fqs (filter function? vars))
+        variables (->fqs (filter variable? vars))
+        special   (set/union (->fqs (filter :special-form vars))
+                             compiler-specials)]
+    {"clojureBoolean"   '#{true false}
+     "clojureConstant"  '#{nil}
+     "clojureException" exceptions
+     "clojureRepeat"    repeat
+     "clojureCond"      conditionals
+     "clojureDefine"    define
+     "clojureVariable"  variables
+     "clojureFunc"      functions
+     "clojureSpecial"   (set/difference special define repeat conditionals exceptions)
+     "clojureMacro"     (set/difference macros define repeat conditionals special)}))
 
 ;; Java 8 Character class implements Unicode standard 6.2 from 2012 [1],
 ;; Java 15 implements Unicode standard 13 from 2020 [2],
@@ -272,17 +291,18 @@
                    (map pr-str)
                    (string/join \,)
                    (format "'%s': [%s]" group))))
-       (string/join "\n    \\ , ")
-       (format "let s:clojure_syntax_keywords = {\n    \\   %s\n    \\ }\n")))
+       (string/join ",\n\t\\ ")
+       (format "let s:clojure_syntax_keywords = {\n\t\\ %s\n\t\\ }\n")))
 
 (def vim-completion-words
   "Vimscript literal list of words for omnifunc completion."
-  (->> 'clojure.core
-       ns-publics
-       keys
-       (concat special-forms)
-       (map (comp pr-str str))
+  (->> keyword-groups
+       vals
+       (reduce set/union)
+       map-keyword-names
        sort
+       (remove #(re-find #"^clojure\.core/" %))
+       (map pr-str)
        (string/join \,)
        (format "let s:words = [%s]\n")))
 
@@ -447,7 +467,7 @@
   (doseq [[file replacements] (project-replacements dir)]
     (doseq [[magic-comment replacement] replacements]
       (let [buf (slurp file)
-            pat (Pattern/compile (str "(?s)\\Q" magic-comment "\\E\\n.*?\\n\\n"))
+            pat (re-pattern (str "(?s)\\Q" magic-comment "\\E\\n.*?\\n\\n"))
             rep (str magic-comment "\n" replacement "\n")
             buf' (string/replace buf pat rep)]
         (if (= buf buf')
