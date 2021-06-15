@@ -225,9 +225,10 @@ Clojure.vim is licensed under the [Vim
 License](http://vimdoc.sourceforge.net/htmldoc/uganda.html#license) for
 distribution with Vim.
 
-- Copyright © 2013–2017, Sung Pae. <self@sungpae.com>
-- Copyright © 2008–2012, Meikel Brandmeyer. <mb@kotka.de>
-- Copyright © 2007–2008, Toralf Wittner. <toralf.wittner@gmail.com>
+- Copyright © 2020–2021, The clojure-vim contributors.
+- Copyright © 2013–2018, Sung Pae.
+- Copyright © 2008–2012, Meikel Brandmeyer.
+- Copyright © 2007–2008, Toralf Wittner.
 
 See [LICENSE](https://github.com/clojure-vim/clojure.vim/blob/master/LICENSE)
 for more details.

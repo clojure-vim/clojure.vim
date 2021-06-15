@@ -13,7 +13,8 @@ Clojure.vim is licenced under the same terms as Vim using the Vim Licence.
 
     Modified and relicensed under the Vim License for distribution with Vim:
 
-        Copyright © 2013–2017, Sung Pae <self@sungpae.com>
+        Copyright © 2020–2021, The clojure-vim contributors
+        Copyright © 2013–2018, Sung Pae <self@sungpae.com>
 
 ------------------------------------------------------------------------------
 
