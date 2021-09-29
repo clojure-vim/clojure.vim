@@ -133,6 +133,7 @@ syntax keyword clojureCommentTodo contained FIXME XXX TODO BUG NOTE HACK FIXME: 
 
 syntax match clojureComment ";.*$" contains=clojureCommentTodo,@Spell
 syntax match clojureComment "#!.*$"
+syntax match clojureComment ","
 
 " Comment out discarded forms.  <https://clojure.org/guides/weird_characters#_discard>
 " TODO: stacking support and/or option to enable/disable this.
