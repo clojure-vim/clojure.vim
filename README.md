@@ -36,6 +36,8 @@ regions, such as rainbow parenphesis plugins.)
 
 ### Syntax options
 
+#### `g:clojure_syntax_keywords`
+
 Syntax highlighting of public vars in `clojure.core` is provided by default,
 but additional symbols can be highlighted by adding them to the
 `g:clojure_syntax_keywords` variable.
@@ -56,6 +58,14 @@ that is intended for use by plugin authors to highlight symbols dynamically.
 By setting `b:clojure_syntax_without_core_keywords`, vars from `clojure.core`
 will not be highlighted by default.  This is useful for namespaces that have
 set `(:refer-clojure :only [])`.
+
+
+#### `g:clojure_discard_macro`
+
+Set this variable to `1` to enable highlighting of the
+"[discard reader macro](https://clojure.org/guides/weird_characters#_discard)".
+Due to limitations in Vim's syntax rules we cannot correctly highlight stacked
+discard macros (e.g. `#_#_`).
 
 
 ### Indent options

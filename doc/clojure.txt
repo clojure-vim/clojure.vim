@@ -115,9 +115,11 @@ clojure-mode.el:
 
 CLOJURE							*ft-clojure-syntax*
 
+						*g:clojure_syntax_keywords*
+
 Syntax highlighting of public vars in "clojure.core" is provided by default,
 but additional symbols can be highlighted by adding them to the
-*g:clojure_syntax_keywords* variable.  The value should be a |Dictionary| of
+|g:clojure_syntax_keywords| variable.  The value should be a |Dictionary| of
 syntax group names, each containing a |List| of identifiers.
 >
 	let g:clojure_syntax_keywords = {
@@ -135,9 +137,24 @@ By setting the *b:clojure_syntax_without_core_keywords* variable, vars from
 "clojure.core" will not be highlighted by default.  This is useful for
 namespaces that have set `(:refer-clojure :only [])`
 
-Setting *g:clojure_fold* to `1` will enable the folding of Clojure code.  Any
+
+							*g:clojure_fold*
+
+Setting |g:clojure_fold| to `1` will enable the folding of Clojure code.  Any
 list, vector or map that extends over more than one line can be folded using
 the standard Vim |fold-commands|.
+
+
+						*g:clojure_discard_macro*
+
+Set this variable to `1` to enable basic highlighting of Clojure's "discard
+reader macro".
+>
+	#_(defn foo [x]
+	    (println x))
+<
+Note that this option will not correctly highlight stacked discard macros
+(e.g. `#_#_`).
 
 
 ABOUT							*clojure-about*
