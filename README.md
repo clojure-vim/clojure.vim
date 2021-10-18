@@ -1,95 +1,85 @@
 # Clojure.vim
 
-[Vim][] runtime files for [Clojure][].  This is a fork of [vim-clojure-static][].
+[Clojure][] syntax highlighting for Vim and Neovim, including:
+
+- [Augmentable](#syntax-options) syntax highlighting.
+- [Configurable](#indent-options) indentation.
+- Basic insert-mode completion of special forms and public vars in
+  `clojure.core`.  (Invoke with `<C-x><C-o>` or `<C-x><C-u>`.)
 
 
 ## Installation
 
-These files ship with Vim version 7.3.803 and later and are periodically
-merged into the official Vim repository.
+These files are included in both Vim and Neovim.  However if you would like the
+latest changes just install this repository like any other plugin.
 
-If you are running an old version of Vim or if you would like to keep up with
-the latest changes, you can install this repository as you would any other Vim
-plugin.
-
-Make sure that the following options are set in your vimrc so that all
-features are enabled:
+Make sure that the following options are set in your vimrc so that all features
+are enabled:
 
 ```vim
 syntax on
 filetype plugin indent on
 ```
 
-## Features
-
-* [Augmentable](#syntax-options) syntax highlighting for Clojure and
-  ClojureScript buffers.
-
-* [Configurable](#indent-options) Clojure-specific indentation.
-
-* Basic insert mode completion for special forms and public vars in
-  `clojure.core`.
-
-  This is bound to both the `'omnifunc'` and `'completefunc'` options, which
-  can be invoked with the insert mode mappings `<C-X><C-O>` and `<C-X><C-U>`
-  respectively.
-
 
 ## Configuration
 
-### Syntax Options
+### Folding
 
-Syntax highlighting for public vars from `clojure.core` is provided by
-default, but any symbol can be matched and highlighted by adding it to the
-`g:clojure_syntax_keywords` or `b:clojure_syntax_keywords` variables:
+Setting `g:clojure_fold` to `1` will enable the folding of Clojure code.  Any
+list, vector or map that extends over more than one line can be folded using
+the standard Vim fold commands.
+
+(Note that this option will not work with scripts that redefine the bracket
+regions, such as rainbow parenphesis plugins.)
+
+
+### Syntax options
+
+Syntax highlighting of public vars in `clojure.core` is provided by default,
+but additional symbols can be highlighted by adding them to the
+`g:clojure_syntax_keywords` variable.
 
 ```vim
 let g:clojure_syntax_keywords = {
-    \ 'clojureMacro': ["defproject", "defcustom"],
-    \ 'clojureFunc': ["string/join", "string/replace"]
+    \   'clojureMacro': ["defproject", "defcustom"],
+    \   'clojureFunc': ["string/join", "string/replace"]
     \ }
 ```
 
-See `s:clojure_syntax_keywords` in the [syntax script](syntax/clojure.vim) for
-a complete example.
+(See `s:clojure_syntax_keywords` in the [syntax script](syntax/clojure.vim) for
+a complete example.)
 
-The global version of this variable is intended for users that always wish
-to have a certain set of symbols highlighted in a certain way, while the
-buffer-local version is intended for plugin authors who wish to highlight
-symbols dynamically.
+There is also a buffer-local variant of this variable (`b:clojure_syntax_keywords`)
+that is intended for use by plugin authors to highlight symbols dynamically.
 
-If the buffer flag `b:clojure_syntax_without_core_keywords` is set, vars from
-`clojure.core` are not highlighted by default. This is useful for highlighting
-namespaces that have set `(:refer-clojure :only [])`.
+By setting `b:clojure_syntax_without_core_keywords`, vars from `clojure.core`
+will not be highlighted by default.  This is useful for namespaces that have
+set `(:refer-clojure :only [])`.
 
-[`vim-clojure-highlight`](https://github.com/guns/vim-clojure-highlight) uses
-these variables to highlight extra vars when connected to a REPL.
 
-### Indent Options
+### Indent options
 
 Clojure indentation differs somewhat from traditional Lisps, due in part to
 the use of square and curly brackets, and otherwise by community convention.
 These conventions are not universally followed, so the Clojure indent script
-offers a few configurable options, listed below.
+offers a few configuration options.
 
-If the current vim does not include searchpairpos(), the indent script falls
-back to normal `'lisp'` indenting, and the following options are ignored.
+(If the current Vim does not include `searchpairpos()`, the indent script falls
+back to normal `'lisp'` indenting, and the following options are ignored.)
+
 
 #### `g:clojure_maxlines`
 
-Set maximum scan distance of searchpairpos(). Larger values trade performance
-for correctness when dealing with very long forms. A value of 0 will scan
-without limits.
+Sets maximum scan distance of `searchpairpos()`.  Larger values trade
+performance for correctness when dealing with very long forms.  A value of
+0 will scan without limits.  The default is 300.
 
-```vim
-" Default
-let g:clojure_maxlines = 300
-```
 
 #### `g:clojure_fuzzy_indent`, `g:clojure_fuzzy_indent_patterns`, `g:clojure_fuzzy_indent_blacklist`
 
 The `'lispwords'` option is a list of comma-separated words that mark special
-forms whose subforms must be indented with two spaces.
+forms whose subforms should be indented with two spaces.
 
 For example:
 
@@ -109,15 +99,11 @@ the fuzzy indent feature:
 let g:clojure_fuzzy_indent = 1
 let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
 let g:clojure_fuzzy_indent_blacklist = ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
-
-" Legacy comma-delimited string version; the list format above is
-" recommended. Note that patterns are implicitly anchored with ^ and $.
-let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
 ```
 
 `g:clojure_fuzzy_indent_patterns` and `g:clojure_fuzzy_indent_blacklist` are
 lists of patterns that will be matched against the unqualified symbol at the
-head of a list. This means that a pattern like `"^foo"` will match all these
+head of a list.  This means that a pattern like `"^foo"` will match all these
 candidates: `foobar`, `my.ns/foobar`, and `#'foobar`.
 
 Each candidate word is tested for special treatment in this order:
@@ -127,10 +113,11 @@ Each candidate word is tested for special treatment in this order:
 3. Return true if word matches a pattern in `g:clojure_fuzzy_indent_patterns`
 4. Return false and indent normally otherwise
 
+
 #### `g:clojure_special_indent_words`
 
-Some forms in Clojure are indented so that every subform is indented only
-two spaces, regardless of `'lispwords'`. If you have a custom construct that
+Some forms in Clojure are indented such that every subform is indented by only
+two spaces, regardless of `'lispwords'`.  If you have a custom construct that
 should be indented in this idiosyncratic fashion, you can add your symbols to
 the default list below.
 
@@ -139,9 +126,10 @@ the default list below.
 let g:clojure_special_indent_words = 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
 ```
 
+
 #### `g:clojure_align_multiline_strings`
 
-Align subsequent lines in multiline strings to the column after the opening
+Align subsequent lines in multi-line strings to the column after the opening
 quote, instead of the same column.
 
 For example:
@@ -160,12 +148,6 @@ For example:
    nisi ut aliquip ex ea commodo consequat.")
 ```
 
-This option is off by default.
-
-```vim
-" Default
-let g:clojure_align_multiline_strings = 0
-```
 
 #### `g:clojure_align_subforms`
 
@@ -179,8 +161,9 @@ two spaces relative to the opening paren:
   baz)
 ```
 
-Setting this option changes this behavior so that all subforms are aligned to
-the same column, emulating the default behavior of clojure-mode.el:
+Setting this option to `1` changes this behaviour so that all subforms are
+aligned to the same column, emulating the default behaviour of
+[clojure-mode.el](https://github.com/clojure-emacs/clojure-mode):
 
 ```clojure
 (foo
@@ -188,21 +171,8 @@ the same column, emulating the default behavior of clojure-mode.el:
  baz)
 ```
 
-This option is off by default.
 
-```vim
-" Default
-let g:clojure_align_subforms = 0
-```
-
-
-## Want to improve your Clojure development set up?
-
-Be sure to check out our list of [suggested Vim plugins in the
-Wiki](https://github.com/clojure-vim/clojure.vim/wiki/Plugins).
-
-
-## Contribute!
+## Contribute
 
 Pull requests are welcome!  Make sure to read the
 [`CONTRIBUTING.md`](CONTRIBUTING.md) for useful information.
@@ -212,8 +182,8 @@ Pull requests are welcome!  Make sure to read the
 
 [Clojure.vim][] is a continuation of [vim-clojure-static][].
 _Vim-clojure-static_ was created by [Sung Pae](https://github.com/guns).  The
-original copies of the packaged runtime files came from [Meikel
-Brandmeyer](http://kotka.de/)'s [VimClojure][] project with permission.
+original copies of the packaged runtime files came from
+[Meikel Brandmeyer](http://kotka.de/)'s [VimClojure][] project with permission.
 
 Thanks to [Tim Pope](https://github.com/tpope/) for advice in
 [#vim](https://www.vi-improved.org/).
@@ -236,7 +206,6 @@ for more details.
 
 <!-- Links -->
 
-[vim]: https://www.vim.org
 [clojure.vim]: https://github.com/clojure-vim/clojure.vim
 [vim-clojure-static]: https://github.com/guns/vim-clojure-static
 [vimclojure]: https://www.vim.org/scripts/script.php?script_id=2501
