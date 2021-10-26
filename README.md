@@ -64,8 +64,9 @@ set `(:refer-clojure :only [])`.
 
 Set this variable to `1` to enable highlighting of the
 "[discard reader macro](https://clojure.org/guides/weird_characters#_discard)".
-Due to limitations in Vim's syntax rules we currently cannot highlight stacked
-discard macros (e.g. `#_#_`), hence this option is disabled by default.
+Due to current limitations in Vim's syntax rules, this option won't highlight
+stacked discard macros (e.g. `#_#_`).  This inconsitency is why this option is
+disabled by default.
 
 
 ### Indent options
