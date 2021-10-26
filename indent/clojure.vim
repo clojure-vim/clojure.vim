@@ -71,14 +71,10 @@ if exists("*searchpairpos")
 		return s:current_char() =~# '\v[\(\)\[\]\{\}]' && !s:ignored_region()
 	endfunction
 
-	" Returns 1 if string matches a pattern in 'patterns', which may be a
-	" list of patterns, or a comma-delimited string of implicitly anchored
-	" patterns.
+	" Returns 1 if string matches a pattern in 'patterns', which should be
+	" a list of patterns.
 	function! s:match_one(patterns, string)
-		let list = type(a:patterns) == type([])
-		           \ ? a:patterns
-		           \ : map(split(a:patterns, ','), '"^" . v:val . "$"')
-		for pat in list
+		for pat in a:patterns
 			if a:string =~# pat | return 1 | endif
 		endfor
 	endfunction
