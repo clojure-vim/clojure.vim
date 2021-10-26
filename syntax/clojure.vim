@@ -136,16 +136,17 @@ syntax match clojureComment "#!.*$"
 syntax match clojureComment ","
 
 " Comment out discarded forms.  <https://clojure.org/guides/weird_characters#_discard>
-" TODO: stacking support and/or option to enable/disable this.
-syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*/   end=/[, \t\n()\[\]{}";]/me=e-1
-syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*"/  skip=/\\[\\"]/ end=/"/
-syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*(/  end=/)/  contains=clojureDiscardForm
-syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*\[/ end=/\]/ contains=clojureDiscardForm
-syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*{/  end=/}/  contains=clojureDiscardForm
+if exists('g:clojure_discard_macro') && g:clojure_discard_macro
+	syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*/   end=/[, \t\n()\[\]{}";]/me=e-1
+	syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*"/  skip=/\\[\\"]/ end=/"/
+	syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*(/  end=/)/  contains=clojureDiscardForm
+	syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*\[/ end=/\]/ contains=clojureDiscardForm
+	syntax region clojureDiscard matchgroup=clojureDiscard start=/#_[ ,\t\n`'~]*{/  end=/}/  contains=clojureDiscardForm
 
-syntax region clojureDiscardForm start="("  end=")"  contained contains=clojureDiscardForm
-syntax region clojureDiscardForm start="{"  end="}"  contained contains=clojureDiscardForm
-syntax region clojureDiscardForm start="\[" end="\]" contained contains=clojureDiscardForm
+	syntax region clojureDiscardForm start="("  end=")"  contained contains=clojureDiscardForm
+	syntax region clojureDiscardForm start="{"  end="}"  contained contains=clojureDiscardForm
+	syntax region clojureDiscardForm start="\[" end="\]" contained contains=clojureDiscardForm
+endif
 
 " -*- TOP CLUSTER -*-
 " Generated from https://github.com/clojure-vim/clojure.vim/blob/%%RELEASE_TAG%%/clj/src/vim_clojure_static/generate.clj
