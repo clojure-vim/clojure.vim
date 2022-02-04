@@ -127,7 +127,7 @@ syntax match clojureRegexpMod "\v\(@<=\?%(\<?[=!]|\>)" contained display
 syntax match clojureRegexpMod "\v\(@<=\?\<[[:alpha:]]+\>" contained display
 
 syntax region clojureRegexpGroup start="(" skip=/\\\\\|\\)/ end=")" matchgroup=clojureRegexpGroup contained contains=clojureRegexpMod,clojureRegexpQuantifier,clojureRegexpBoundary,clojureRegexpEscape,@clojureRegexpCharClasses
-syntax region clojureRegexp start=/\#"/ skip=/\\\\\|\\"/ end=/"/ contains=@clojureRegexpCharClasses,clojureRegexpEscape,clojureRegexpQuote,clojureRegexpBoundary,clojureRegexpQuantifier,clojureRegexpOr,clojureRegexpBackRef,clojureRegexpGroup keepend
+syntax region clojureRegexp matchgroup=clojureRegexpDelimiter start=/\#"/ skip=/\\\\\|\\"/ end=/"/ contains=@clojureRegexpCharClasses,clojureRegexpEscape,clojureRegexpQuote,clojureRegexpBoundary,clojureRegexpQuantifier,clojureRegexpOr,clojureRegexpBackRef,clojureRegexpGroup keepend
 
 syntax keyword clojureCommentTodo contained FIXME XXX TODO BUG NOTE HACK FIXME: XXX: TODO: BUG: NOTE: HACK:
 
@@ -171,6 +171,7 @@ highlight default link clojureStringDelimiter           String
 highlight default link clojureStringEscape              Character
 
 highlight default link clojureRegexp                    Constant
+highlight default link clojureRegexpDelimiter           Constant
 highlight default link clojureRegexpEscape              Character
 highlight default link clojureRegexpCharClass           SpecialChar
 highlight default link clojureRegexpPosixCharClass      clojureRegexpCharClass

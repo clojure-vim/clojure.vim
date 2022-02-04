@@ -11,6 +11,7 @@
 (defpredicates kw :clojureKeyword)
 (defpredicates character :clojureCharacter)
 (defpredicates regexp :clojureRegexp)
+(defpredicates regexp-delimiter :clojureRegexpDelimiter)
 (defpredicates regexp-escape :clojureRegexpEscape)
 (defpredicates regexp-char-class :clojureRegexpCharClass)
 (defpredicates regexp-predefined-char-class :clojureRegexpPredefinedCharClass)
@@ -406,8 +407,8 @@
     ]]
   ["#%s"
    [;; Backslashes with character classes
-    "\"[\\\\]\"" (partial = [:clojureRegexp :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexp])
-    "\"\\[]\"" (partial = [:clojureRegexp :clojureRegexpEscape :clojureRegexpEscape :clojureRegexp :clojureRegexp])
-    "\"\\\\[]\"" (partial = [:clojureRegexp :clojureRegexpEscape :clojureRegexpEscape :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexp])]])
+    "\"[\\\\]\"" (partial = [:clojureRegexpDelimiter :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpDelimiter])
+    "\"\\[]\"" (partial = [:clojureRegexpDelimiter :clojureRegexpEscape :clojureRegexpEscape :clojureRegexp :clojureRegexpDelimiter])
+    "\"\\\\[]\"" (partial = [:clojureRegexpDelimiter :clojureRegexpEscape :clojureRegexpEscape :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpDelimiter])]])
 
 (comment (test #'test-java-regexp-literals))
