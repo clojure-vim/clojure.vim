@@ -113,6 +113,14 @@ clojure-mode.el:
 	 baz)
 <
 
+						  *g:clojure_cljfmt_compat*
+
+Try to be (more) compatible with `cljfmt` Clojure code formatting tool. Turns
+on single space indenting for forms starting with `:keywords`, `'symbols`,
+`#'variables` and `@dereferences` (it affects, for instance, `(:require ...)`
+clause in Clojure `ns` form).
+
+
 CLOJURE							*ft-clojure-syntax*
 
 						*g:clojure_syntax_keywords*
