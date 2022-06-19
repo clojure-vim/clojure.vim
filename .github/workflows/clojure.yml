@@ -1,15 +1,14 @@
----
+name: CI
+on: [push, pull_request, workflow_dispatch]
 
-on: push
-name: Push / PR Builder
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
     - name: Setup clj-kondo
-      uses: DeLaGuardo/setup-clj-kondo@afc83dbbf4e7e32e04649e29dbf30668d30e9e3e
+      uses: DeLaGuardo/setup-clojure@7.0
       with:
-        version: '2022.03.09'
+        clj-kondo: latest
 
     - uses: actions/checkout@v3
 
@@ -21,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: DeLaGuardo/setup-clojure@master
+    - uses: DeLaGuardo/setup-clojure@7.0
       with:
         lein: 2.9.8
 

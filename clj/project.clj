@@ -4,6 +4,6 @@
   :license {:name "Vim License"
             :url "http://vimdoc.sourceforge.net/htmldoc/uganda.html#license"
             :comments ":help license"}
-  :dependencies [[org.clojure/data.csv "1.0.0"]
-                 [org.clojure/clojure "1.11.0"]
+  :dependencies [[org.clojure/data.csv "1.0.1"]
+                 [org.clojure/clojure "1.11.1"]
                  [frak "0.1.9"]])
