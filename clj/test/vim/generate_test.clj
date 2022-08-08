@@ -1,7 +1,7 @@
-(ns vim-clojure-static.generate-test
+(ns vim.generate-test
   (:require [clojure.test :as t :refer [deftest is testing]]
             [clojure.set :as set]
-            [vim-clojure-static.generate :as sut]))
+            [vim.generate :as sut]))
 
 (deftest character-properties-test
   (is (= #{"LC" "Lo" "So" "Lm" "Sc" "Lt" "Co" "Me" "Zp" "L" "Sm" "Ps" "Cf" "M"

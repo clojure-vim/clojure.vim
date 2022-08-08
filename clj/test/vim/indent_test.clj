@@ -1,6 +1,6 @@
-(ns vim-clojure-static.indent-test
+(ns vim.indent-test
   (:require [clojure.test :refer [deftest]]
-            [vim-clojure-static.test :refer [test-indent]]))
+            [vim.test :refer [test-indent]]))
 
 (deftest test-basic-sexp-indent
   (test-indent "works as expected with basic S-expressions"

@@ -1,16 +1,16 @@
 ;; Authors: Sung Pae <self@sungpae.com>
 ;;          Joel Holdbrooks <cjholdbrooks@gmail.com>
 
-(ns vim-clojure-static.generate
+(ns vim.generate
   (:require [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
             [clojure.set :as set]
-            [clojure.string :as string]
+            [clojure.string :as str]
             [clojure.data.csv :as csv]
             [frak :as f])
   (:import [clojure.lang MultiFn Compiler]
-           java.text.SimpleDateFormat
-           java.util.Date))
+           [java.text SimpleDateFormat]
+           [java.util Date]))
 
 ;;
 ;; Helpers
@@ -20,7 +20,7 @@
   "Create a non-capturing regular expression pattern compatible with Vim."
   [strs]
   (-> (f/string-pattern strs {:escape-chars :vim})
-      (string/replace #"\(\?:" "\\%\\(")))
+      (str/replace #"\(\?:" "\\%\\(")))
 
 (defn- property-pattern
   "Vimscript very magic pattern for a character property class."
@@ -47,7 +47,7 @@
               coll)
         bare-symbols
         (into #{}
-              (map #(string/replace-first % #"^clojure\.core/(?!import\*$)" ""))
+              (map #(str/replace-first % #"^clojure\.core/(?!import\*$)" ""))
               stringified)]
     (set/union stringified bare-symbols)))
 
@@ -61,7 +61,7 @@
        (concat groups)
        sort
        distinct
-       (string/join \,)
+       (str/join \,)
        (format "syntax cluster clojureTop contains=@Spell,%s\n")))
 
 ;;
@@ -153,21 +153,21 @@
   (with-open [f (io/reader (io/resource "unicode/PropertyValueAliases.txt"))]
     (->> (csv/read-csv f :separator \;)
          (map (fn [row]
-                (mapv string/trim row)))
+                (mapv str/trim row)))
          doall)))
 
 (def unicode-blocks
   (with-open [f (io/reader (io/resource "unicode/Blocks.txt"))]
     (->> (csv/read-csv f :separator \;)
          (map (fn [row]
-                 (mapv string/trim row)))
+                 (mapv str/trim row)))
          doall)))
 
 (defn- block-alt-names [block-name]
-  (let [n (string/upper-case block-name)]
+  (let [n (str/upper-case block-name)]
     [n
-     (string/replace n #"[ -]" "_")
-     (string/replace n #" " "")]))
+     (str/replace n #"[ -]" "_")
+     (str/replace n #" " "")]))
 
 (def character-properties
   {:posix #{"Lower" "Space" "XDigit" "Alnum" "Cntrl" "Graph" "Alpha" "Print"
@@ -193,12 +193,12 @@
    :script (->> unicode-property-value-aliases
                 (filter #(= "sc" (first %)))
                 (mapcat #(subvec % 1 3))
-                (map string/upper-case)
+                (map str/upper-case)
                 set)
    :block (->> unicode-blocks
                (filter (fn [row]
                          (and (seq (first row))
-                              (not (string/starts-with? (first row) "#")))))
+                              (not (str/starts-with? (first row) "#")))))
                (map second)
                ;; Old names supported by Java
                (concat ["GREEK" "COMBINING MARKS FOR SYMBOLS" "CYRILLIC SUPPLEMENTARY"])
@@ -289,9 +289,9 @@
                    map-keyword-names
                    sort
                    (map pr-str)
-                   (string/join \,)
+                   (str/join \,)
                    (format "'%s': [%s]" group))))
-       (string/join ",\n\t\\ ")
+       (str/join ",\n\t\\ ")
        (format "let s:clojure_syntax_keywords = {\n\t\\ %s\n\t\\ }\n")))
 
 (def vim-completion-words
@@ -303,7 +303,7 @@
        sort
        (remove #(re-find #"^clojure\.core/" %))
        (map pr-str)
-       (string/join \,)
+       (str/join \,)
        (format "let s:words = [%s]\n")))
 
 (def vim-posix-char-classes
@@ -320,7 +320,7 @@
   (syntax-match-properties
     :clojureRegexpJavaCharClass
     "java%s"
-    (map #(string/replace % #"\Ajava" "") (:java character-properties))))
+    (map #(str/replace % #"\Ajava" "") (:java character-properties))))
 
 (def vim-unicode-binary-char-classes
   "Vimscript literal `syntax match` for Unicode Binary properties."
@@ -329,7 +329,7 @@
   (syntax-match-properties
     :clojureRegexpUnicodeCharClass
     "\\cIs%s"
-    (map string/lower-case (:binary character-properties))))
+    (map str/lower-case (:binary character-properties))))
 
 (def vim-unicode-category-char-classes
   "Vimscript literal `syntax match` for Unicode General Category classes."
@@ -366,7 +366,7 @@
   (syntax-match-properties
     :clojureRegexpUnicodeCharClass
     "\\c%%(Is|sc\\=|script\\=)%s"
-    (map string/lower-case (:script character-properties))))
+    (map str/lower-case (:script character-properties))))
 
 (def vim-unicode-block-char-classes
   "Vimscript literal `syntax match` for Unicode Block properties."
@@ -375,11 +375,11 @@
   (syntax-match-properties
     :clojureRegexpUnicodeCharClass
     "\\c%%(In|blk\\=|block\\=)%s"
-    (map string/lower-case (:block character-properties))))
+    (map str/lower-case (:block character-properties))))
 
 (def vim-lispwords
   "Vimscript literal `setlocal lispwords=` statement."
-  (str "setlocal lispwords=" (string/join \, (sort lispwords)) "\n"))
+  (str "setlocal lispwords=" (str/join \, (sort lispwords)) "\n"))
 
 (defn- comprehensive-clojure-character-property-regexps
   "A string representing a Clojure literal vector of regular expressions
@@ -389,8 +389,8 @@
   (let [fmt (fn [prefix prop-key]
               (let [props (map (partial format "\\p{%s%s}" prefix)
                                (sort (get character-properties prop-key)))]
-                (format "#\"%s\"" (string/join props))))]
-    (string/join \newline [(fmt "" :posix)
+                (format "#\"%s\"" (str/join props))))]
+    (str/join \newline [(fmt "" :posix)
                            (fmt "" :java)
                            (fmt "Is" :binary)
                            (fmt "general_category=" :category)
@@ -405,29 +405,29 @@
   #"(?ms)^CLOJURE.*?(?=^[\p{Lu} ]+\t*\*)")
 
 (defn- fjoin [& args]
-  (string/join \/ args))
+  (str/join \/ args))
 
 (defn- qstr [& xs]
-  (string/replace (string/join xs) "\\" "\\\\"))
+  (str/replace (str/join xs) "\\" "\\\\"))
 
 (defn- update-doc! [first-line-pattern src-file dst-file]
   (let [sbuf (with-open [rdr (io/reader src-file)]
                (->> rdr
                     line-seq
                     (drop-while #(not (re-find first-line-pattern %)))
-                    (string/join \newline)))
+                    (str/join \newline)))
         dbuf (slurp dst-file)
         dmatch (re-find CLOJURE-SECTION dbuf)
         hunk (re-find CLOJURE-SECTION sbuf)]
-    (spit dst-file (string/replace-first dbuf dmatch hunk))))
+    (spit dst-file (str/replace-first dbuf dmatch hunk))))
 
 (defn- copy-runtime-files! [src dst & opts]
   (let [{:keys [tag date paths]} (apply hash-map opts)]
     (doseq [path paths
             :let [buf (-> (fjoin src path)
                           slurp
-                          (string/replace "%%RELEASE_TAG%%" tag)
-                          (string/replace "%%RELEASE_DATE%%" date))]]
+                          (str/replace "%%RELEASE_TAG%%" tag)
+                          (str/replace "%%RELEASE_DATE%%" date))]]
       (spit (fjoin dst "runtime" path) buf))))
 
 (defn- project-replacements [dir]
@@ -469,7 +469,7 @@
       (let [buf (slurp file)
             pat (re-pattern (str "(?s)\\Q" magic-comment "\\E\\n.*?\\n\\n"))
             rep (str magic-comment "\n" replacement "\n")
-            buf' (string/replace buf pat rep)]
+            buf' (str/replace buf pat rep)]
         (if (= buf buf')
           (printf "No changes: %s\n" magic-comment)
           (do (printf "Updating %s\n" magic-comment)
@@ -478,7 +478,7 @@
 (defn- update-vim!
   "Update Vim repository runtime files in dst/runtime"
   [src dst]
-  (let [current-tag (string/trim-newline (:out (sh "git" "rev-parse" "HEAD")))
+  (let [current-tag (str/trim-newline (:out (sh "git" "rev-parse" "HEAD")))
         current-date (.format (SimpleDateFormat. "YYYY-MM-dd") (Date.))]
     (assert (seq current-tag) "Git HEAD doesn't appear to have a commit hash.")
     (update-doc! #"CLOJURE\t*\*ft-clojure-indent\*"
@@ -506,33 +506,33 @@
   (spit "tmp/all-char-props.clj"
         (comprehensive-clojure-character-property-regexps))
 
-  (require 'vim-clojure-static.test)
+  (require 'vim.test)
 
   ;; Performance test: `syntax keyword` vs `syntax match`
-  (vim-clojure-static.test/benchmark
+  (vim.test/benchmark
     1000 "tmp/bench.clj" (str keyword-groups)
     ;; `syntax keyword`
     (->> keyword-groups
          (map (fn [[group keywords]]
                 (format "syntax keyword clojure%s %s\n"
                         group
-                        (string/join \space (sort (map-keyword-names keywords))))))
-         (map string/trim-newline)
-         (string/join " | "))
+                        (str/join \space (sort (map-keyword-names keywords))))))
+         (map str/trim-newline)
+         (str/join " | "))
     ;; Naive `syntax match`
     (->> keyword-groups
          (map (fn [[group keywords]]
                 (format "syntax match clojure%s \"\\V\\<%s\\>\"\n"
                         group
-                        (string/join "\\|" (map-keyword-names keywords)))))
-         (map string/trim-newline)
-         (string/join " | "))
+                        (str/join "\\|" (map-keyword-names keywords)))))
+         (map str/trim-newline)
+         (str/join " | "))
     ;; Frak-optimized `syntax match`
     (->> keyword-groups
          (map (fn [[group keywords]]
                 (format "syntax match clojure%s \"\\v<%s>\"\n"
                         group
                         (vim-frak-pattern (map-keyword-names keywords)))))
-         (map string/trim-newline)
-         (string/join " | ")))
+         (map str/trim-newline)
+         (str/join " | ")))
   )

@@ -1,8 +1,8 @@
 ;; Authors: Sung Pae <self@sungpae.com>
 ;;          Joel Holdbrooks <cjholdbrooks@gmail.com>
 
-(ns vim-clojure-static.syntax-test
-  (:require [vim-clojure-static.test :refer [defpredicates defsyntaxtest]]))
+(ns vim.syntax-test
+  (:require [vim.test :refer [defpredicates defsyntaxtest]]))
 
 ;; defpredicates also register not-equal vars, this is just for clj-kondo
 (declare !number !regexp-escape !regexp-posix-char-class !regexp-quantifier)

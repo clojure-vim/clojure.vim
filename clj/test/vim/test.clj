@@ -1,13 +1,13 @@
 ;; Authors: Sung Pae <self@sungpae.com>
 
-(ns vim-clojure-static.test
+(ns vim.test
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.java.shell :as shell]
             [clojure.string :as string]
             [clojure.test :as test])
-  (:import (java.io File)
-           (java.util List)))
+  (:import [java.io File]
+           [java.util List]))
 
 (defmacro with-tempfile
   {:requires [File]}
@@ -126,13 +126,13 @@
   `(test/testing ~string
      (with-tempfile ~tmp-binding
        (try
-         (spit ~tmp-sym (slurp (~io/resource ~in)))
+         (spit ~tmp-sym (slurp (~io/resource (str "indent-test-cases/" ~in))))
          ~@body
          (catch Throwable e#
            (spit ~tmp-sym e#))
          (finally
            (test/is (= (slurp ~tmp-sym)
-                       (slurp (~io/resource ~out)))))))))
+                       (slurp (~io/resource (str "indent-test-cases/" ~out))))))))))
 
 (defmacro test-indent
   {:requires [#'with-transform-test]}
