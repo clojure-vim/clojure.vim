@@ -1,3 +1,2 @@
-{:lint-as {vim.test/with-tempfile clojure.core/fn
-           vim.test/defpredicates clojure.core/def
+{:lint-as {vim.test/defpredicates clojure.core/def
            vim.test/defsyntaxtest clojure.core/def}}

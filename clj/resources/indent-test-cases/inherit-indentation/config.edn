@@ -1,0 +1,3 @@
+{:indent? false
+ :extra-cmds ["normal! gg"
+              "exec \"normal! /α\\<CR>s\\<C-O>Oa\\<Esc>/β\\<CR>s\\<CR>\\<CR>\\<C-H>\\<C-H>\\<C-H>\\<C-H>\\<C-H>\\<C-H>\\<C-H>b\\<CR>c\\<CR>\\<CR>d\\<Esc>\""]}

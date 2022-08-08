@@ -35,5 +35,3 @@
         (six-times [y]
           (* (twice y) 3))]
   (foo #{:foo :bar :biz} :foo))
-
-;; vim:ft=clojure:
