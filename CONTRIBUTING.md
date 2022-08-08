@@ -19,9 +19,8 @@ special forms.
 ```
 $ cd clj/
 $ lein repl
-> (require 'vim-clojure-static.generate)
-> (ns vim-clojure-static.generate)
-> (update-project! "..")
+> (require 'vim.generate)
+> (vim.generate/update-project! "..")
 ```
 
 ### Update Unicode syntax
@@ -54,9 +53,8 @@ to serve as a reminder on how to do it.
 ```
 $ cd clj/
 $ lein repl
-> (require 'vim-clojure-static.generate)
-> (ns vim-clojure-static.generate)
-> (update-vim! ".." "../../vim")
+> (require 'vim.generate)
+> (vim.generate/update-vim! ".." "../../vim")
 ```
 
 Open PR in official [Vim repository][], this will automatically send an email
