@@ -27,5 +27,3 @@ bar))
 
 (#_(foo bar)
 a)
-
-;; vim:ft=clojure:

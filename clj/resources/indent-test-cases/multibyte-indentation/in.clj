@@ -1,5 +1,3 @@
 (let [Δt (if foo
            bar
            baz)])
-
-;; vim:ft=clojure:

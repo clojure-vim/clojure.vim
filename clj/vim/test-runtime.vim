@@ -1,10 +1,9 @@
 " Authors: Sung Pae <self@sungpae.com>
 
-execute 'set rtp=' . expand('%:p:h:h:h') . ',$VIMRUNTIME'
+let &rtp = getcwd() . '/..,' . &rtp
 filetype plugin indent on
-syntax on
+syntax enable
 set synmaxcol=0 backspace=2
-setfiletype clojure
 
 function! EDN(value)
 	" Changing the quotes may make this valid EDN
@@ -18,16 +17,6 @@ function! ClojureSynIDNames()
 		call add(names, map(range(1, virtcol([lnum, '$']) - 1), f))
 	endfor
 	return EDN(names)
-endfunction
-
-function! TypeKeys(keys)
-	execute 'normal! ' . a:keys
-	write
-endfunction
-
-function! IndentFile()
-	normal! gg=G
-	write
 endfunction
 
 function! Time(n, expr)

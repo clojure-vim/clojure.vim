@@ -9,5 +9,3 @@
 
 #?@(:clj  [5 6 7 8]
       :cljs [1 2 3 4])))
-
-;; vim:ft=clojure:
