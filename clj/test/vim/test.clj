@@ -90,21 +90,35 @@
                             ss λs)))
                 contexts)))))
 
-(defmacro defpredicates
+(defmacro defpredicates-general
   "Create two complementary predicate vars, `sym` and `!sym`, which test if
    all members of a passed collection are equal to `kw`"
-  [sym kw]
+  [pred-eq pred-neq sym kw]
   `(do
      (defn ~sym
        ~(str "Returns true if all elements of coll equal " kw)
        {:arglists '~'[coll]}
        [coll#]
-       (every? (partial = ~kw) coll#))
+       (~pred-eq ~kw coll#))
      (defn ~(symbol (str \! sym))
        ~(str "Returns true if any elements of coll do not equal " kw)
        {:arglists '~'[coll]}
        [coll#]
-       (boolean (some (partial not= ~kw) coll#)))))
+       (~pred-neq ~kw coll#))))
+
+(defmacro defpredicates
+  "Create two complementary predicate vars, `sym` and `!sym`, which test if
+   all members of a passed collection are equal to `kw`"
+  [sym kw]
+  (let [pred-eq (fn [expected results] (every? (partial = expected) results))
+        pred-neq (fn [expected results] (boolean (some (partial not= expected) results)))]
+    `(defpredicates-general ~pred-eq ~pred-neq ~sym ~kw)))
+
+(defmacro def-eq-predicates
+  "Create two complementary predicate vars, `sym` and `!sym`, which test if
+   input and result are equal"
+  [sym kw]
+  `(defpredicates-general '= 'not= ~sym ~kw))
 
 (defn benchmark [n file buf & exprs]
   (vim-exec file buf (format "Benchmark(%d, %s)"

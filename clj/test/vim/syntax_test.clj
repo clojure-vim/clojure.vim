@@ -2,13 +2,16 @@
 ;;          Joel Holdbrooks <cjholdbrooks@gmail.com>
 
 (ns vim.syntax-test
-  (:require [vim.test :refer [defpredicates defsyntaxtest]]))
+  (:require [vim.test :refer [defpredicates defsyntaxtest def-eq-predicates]]))
 
 ;; defpredicates also register not-equal vars, this is just for clj-kondo
 (declare !number !regexp-escape !regexp-posix-char-class !regexp-quantifier)
 
 (defpredicates number :clojureNumber)
-(defpredicates kw :clojureKeyword)
+(def-eq-predicates kw [:clojureKeywordNsColon :clojureKeyword])
+(def-eq-predicates kwWithNs [:clojureKeywordNsColon :clojureKeyword])
+(def-eq-predicates sym [:clojureSymbolNsColon :clojureSymbol])
+(def-eq-predicates symWithNs [:clojureSymbolNsColon :clojureSymbol])
 (defpredicates character :clojureCharacter)
 (defpredicates regexp :clojureRegexp)
 (defpredicates regexp-delimiter :clojureRegexpDelimiter)
@@ -115,16 +118,38 @@
     ":a" kw
     ":αβγ" kw
     "::a" kw
-    ":a/b" kw
+    ":a/b" kwWithNs
     ":a:b" kw
-    ":a:b/:c:b" kw
-    ":a/b/c/d" kw
-    "::a/b" kw
+    ":a:b/:c:b" kwWithNs
+    ":a/b/c/d" kwWithNs
+    "::a/b" kwWithNs
     "::" !kw
+    "::" !kwWithNs
     ":a:" !kw
+    ":a:" !kwWithNs
     ":a/" !kw
-    ; ":/" !kw ; This is legal, but for simplicity we do not match it
-    ":" !kw]])
+    ":a/" !kwWithNs
+    ":/" !kw       ; This is legal, but for simplicity we do not match it
+    ":/" !kwWithNs ; This is legal, but for simplicity we do not match it
+    ":" !kw
+    ":" !kwWithNs]])
+
+(defsyntaxtest symbols-test
+  ["%s"
+   ["1" !sym
+    "1" !symWithNs
+    "A" sym
+    "a" sym
+    "αβγ" sym
+    "a/b" symWithNs
+    "a:b" sym
+    "a:b/:c:b" symWithNs
+    "a/b/c/d" symWithNs
+    "a:" !sym
+    "a:" !symWithNs
+    "a/" !sym
+    "a/" !symWithNs
+    "/" sym]])
 
 (comment (test #'keywords-test))
 
@@ -403,8 +428,7 @@
     ;; (?>X)              X, as an independent, non-capturing group
     "(?>X)" regexp-mod
 
-    "(?X)" !regexp-mod
-    ]]
+    "(?X)" !regexp-mod]]
   ["#%s"
    [;; Backslashes with character classes
     "\"[\\\\]\"" (partial = [:clojureRegexpDelimiter :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpDelimiter])
