@@ -9,9 +9,27 @@
 
 (defpredicates number :clojureNumber)
 (def-eq-predicates kw [:clojureKeywordNsColon :clojureKeyword])
-(def-eq-predicates kwWithNs [:clojureKeywordNsColon :clojureKeyword])
-(def-eq-predicates sym [:clojureSymbolNsColon :clojureSymbol])
-(def-eq-predicates symWithNs [:clojureSymbolNsColon :clojureSymbol])
+(def-eq-predicates kwCurrentNs [:clojureKeywordNsColon :clojureKeywordNsColon :clojureKeyword])
+(def-eq-predicates kwWithNs [:clojureKeywordNsColon :clojureKeywordNs :clojureKeywordNsSeparator :clojureKeyword])
+(def-eq-predicates kwWithNs3_4 [:clojureKeywordNsColon
+                                :clojureKeywordNs
+                                :clojureKeywordNs
+                                :clojureKeywordNs
+                                :clojureKeywordNsSeparator
+                                :clojureKeyword
+                                :clojureKeyword
+                                :clojureKeyword
+                                :clojureKeyword])
+(def-eq-predicates sym [:clojureSymbol])
+(def-eq-predicates symWithNs [:clojureSymbol])
+(def-eq-predicates symWithNs_tripleBody [:clojureKeywordNsColon
+                                         :clojureKeywordNs :clojureKeywordNsSeparator
+                                         :clojureKeywordNs :clojureKeywordNsSeparator
+                                         :clojureKeywordNs :clojureKeywordNsSeparator
+                                         :clojureKeyword])
+(def-eq-predicates kwWithNamedNs [:clojureKeywordNsColon :clojureKeywordNsColon
+                                  :clojureKeywordNs :clojureKeywordNsSeparator :clojureKeyword])
+
 (defpredicates character :clojureCharacter)
 (defpredicates regexp :clojureRegexp)
 (defpredicates regexp-delimiter :clojureRegexpDelimiter)
@@ -111,28 +129,24 @@
 
 (comment (test #'test-character-literals))
 
+(def emptyKeyword (keyword ""))
+
 (defsyntaxtest keywords-test
   ["%s"
    [":1" kw
     ":A" kw
     ":a" kw
-    ":αβγ" kw
-    "::a" kw
+    ":αβγ" (partial = [:clojureKeywordNsColon :clojureKeyword :clojureKeyword :clojureKeyword])
+    "::a" kwCurrentNs
     ":a/b" kwWithNs
-    ":a:b" kw
-    ":a:b/:c:b" kwWithNs
-    ":a/b/c/d" kwWithNs
-    "::a/b" kwWithNs
-    "::" !kw
-    "::" !kwWithNs
-    ":a:" !kw
-    ":a:" !kwWithNs
-    ":a/" !kw
-    ":a/" !kwWithNs
-    ":/" !kw       ; This is legal, but for simplicity we do not match it
-    ":/" !kwWithNs ; This is legal, but for simplicity we do not match it
-    ":" !kw
-    ":" !kwWithNs]])
+    ":a:b/:c:b" kwWithNs3_4
+    ":a/b/c/d" symWithNs_tripleBody
+    "::a/b" kwWithNamedNs
+    "::" (partial = [emptyKeyword emptyKeyword])
+    ":a:" (partial = [emptyKeyword :clojureSymbol emptyKeyword])
+    ":a/" (partial = [:clojureKeywordNsColon :clojureKeywordNs :clojureKeywordNsSeparator])
+    ":/" (partial =  [:clojureKeywordNsColon :clojureKeywordNsSeparator])
+    ":" (partial = [emptyKeyword])]])
 
 (defsyntaxtest symbols-test
   ["%s"
@@ -140,16 +154,26 @@
     "1" !symWithNs
     "A" sym
     "a" sym
-    "αβγ" sym
-    "a/b" symWithNs
-    "a:b" sym
-    "a:b/:c:b" symWithNs
-    "a/b/c/d" symWithNs
+    "αβγ" (partial = [:clojureSymbol :clojureSymbol :clojureSymbol])
+    "a/b" (partial = [:clojureSymbolNs :clojureSymbolNsSeparator :clojureSymbol])
+    "a:b" (partial = [:clojureSymbol :clojureSymbol :clojureSymbol])
+    "a:b/:c:b" (partial = [:clojureSymbolNs
+                           :clojureSymbolNs
+                           :clojureSymbolNs
+                           :clojureSymbolNsSeparator
+                           :clojureSymbol
+                           :clojureSymbol
+                           :clojureSymbol
+                           :clojureSymbol])
+    "a/b/c/d" (partial = [:clojureSymbolNs :clojureSymbolNsSeparator
+                          :clojureSymbolNs :clojureSymbolNsSeparator
+                          :clojureSymbolNs :clojureSymbolNsSeparator
+                          :clojureSymbol])
     "a:" !sym
     "a:" !symWithNs
     "a/" !sym
     "a/" !symWithNs
-    "/" sym]])
+    "/" !sym]])
 
 (comment (test #'keywords-test))
 

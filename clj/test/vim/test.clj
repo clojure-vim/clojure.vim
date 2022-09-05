@@ -97,12 +97,12 @@
   `(do
      (defn ~sym
        ~(str "Returns true if all elements of coll equal " kw)
-       {:arglists '~'[coll]}
+       {:arglists (list '~'[coll])}
        [coll#]
        (~pred-eq ~kw coll#))
      (defn ~(symbol (str \! sym))
        ~(str "Returns true if any elements of coll do not equal " kw)
-       {:arglists '~'[coll]}
+       {:arglists (list '~'[coll])}
        [coll#]
        (~pred-neq ~kw coll#))))
 
@@ -118,7 +118,7 @@
   "Create two complementary predicate vars, `sym` and `!sym`, which test if
    input and result are equal"
   [sym kw]
-  `(defpredicates-general '= 'not= ~sym ~kw))
+  `(defpredicates-general = not= ~sym ~kw))
 
 (defn benchmark [n file buf & exprs]
   (vim-exec file buf (format "Benchmark(%d, %s)"

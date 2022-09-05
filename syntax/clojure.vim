@@ -62,7 +62,7 @@ endif
 unlet! s:key
 delfunction s:syntax_keyword
 
-syntax match clojureKeywordNs contained "\v[^/ :']+\ze/"
+syntax match clojureKeywordNs contained "\v[^/: ']+[^/ ']*\ze/"
 syntax match clojureKeywordNsSeparator contained "/"
 syntax match clojureKeywordNsColon contained "\v<:{1,2}"
 " Keywords are symbols:
@@ -71,7 +71,7 @@ syntax match clojureKeywordNsColon contained "\v<:{1,2}"
 "   * Must not end in a : or /
 "   * Must not have two adjacent colons except at the beginning
 "   * Must not contain any reader metacharacters except for ' and #
-syntax match clojureKeyword "\v<:{1,2}([^ \n\r\t()\[\]{}";@^`~\\/]+/)*[^ \n\r\t()\[\]{}";@^`~\\/]+:@1<!>" contains=clojureKeywordNs,clojureKeywordNsSeparator,clojureKeywordNsColon
+syntax match clojureKeyword "\v<:{1,2}([^ \n\r\t()\[\]{}";@^`~\\/]*/)*[^ \n\r\t()\[\]{}";@^`~\\/]*:@1<!>" contains=clojureKeywordNs,clojureKeywordNsSeparator,clojureKeywordNsColon
 
 syntax match clojureStringEscape "\v\\%([\\btnfr"]|u\x{4}|[0-3]\o{2}|\o{1,2})" contained
 
@@ -79,7 +79,7 @@ syntax region clojureString matchgroup=clojureStringDelimiter start=/"/ skip=/\\
 
 syntax match clojureCharacter "\v\\%(o%([0-3]\o{2}|\o{1,2})|u\x{4}|newline|tab|space|return|backspace|formfeed|.)"
 
-syntax match clojureSymbolNs contained "\v[^/ :']+\ze/"
+syntax match clojureSymbolNs contained "\v[^/ ]+\ze/"
 syntax match clojureSymbolNsSeparator contained "/"
 syntax match clojureSymbol "\v%([a-zA-Z!$&*_+=|<.>?-]|[^\x00-\x7F])+%(:?%([a-zA-Z0-9!#$%&*_+=|'<.>/?-]|[^\x00-\x7F]))*[#:]@1<!" contains=clojureSymbolNs,clojureSymbolNsSeparator
 
