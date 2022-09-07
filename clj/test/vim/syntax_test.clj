@@ -29,7 +29,27 @@
                                          :clojureKeyword])
 (def-eq-predicates kwWithNamedNs [:clojureKeywordNsColon :clojureKeywordNsColon
                                   :clojureKeywordNs :clojureKeywordNsSeparator :clojureKeyword])
-
+(def-eq-predicates dispatchWithSymbolInside [:clojureDispatch
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureParen
+                                             :clojureSymbolNs
+                                             :clojureSymbolNs
+                                             :clojureSymbolNs
+                                             :clojureSymbolNs
+                                             :clojureSymbolNsSeparator
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureParen])
 (defpredicates character :clojureCharacter)
 (defpredicates regexp :clojureRegexp)
 (defpredicates regexp-delimiter :clojureRegexpDelimiter)
@@ -173,7 +193,8 @@
     "a:" !symWithNs
     "a/" !sym
     "a/" !symWithNs
-    "/" !sym]])
+    "/" !sym
+    "#function[test/hello]" dispatchWithSymbolInside]])
 
 (comment (test #'keywords-test))
 

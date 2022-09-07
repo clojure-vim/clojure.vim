@@ -79,7 +79,7 @@ syntax region clojureString matchgroup=clojureStringDelimiter start=/"/ skip=/\\
 
 syntax match clojureCharacter "\v\\%(o%([0-3]\o{2}|\o{1,2})|u\x{4}|newline|tab|space|return|backspace|formfeed|.)"
 
-syntax match clojureSymbolNs contained "\v[^/ ]+\ze/"
+syntax match clojureSymbolNs contained "\v[^/\[ ]+\ze/"
 syntax match clojureSymbolNsSeparator contained "/"
 syntax match clojureSymbol "\v%([a-zA-Z!$&*_+=|<.>?-]|[^\x00-\x7F])+%(:?%([a-zA-Z0-9!#$%&*_+=|'<.>/?-]|[^\x00-\x7F]))*[#:]@1<!" contains=clojureSymbolNs,clojureSymbolNsSeparator
 
