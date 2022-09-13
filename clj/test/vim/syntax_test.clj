@@ -220,8 +220,7 @@
                         :clojureDispatch
                         :clojureSymbolNs
                         :clojureSymbolNsSeparator
-                        :clojureSymbol
-                        :clojureParen])]])
+                        :clojureSymbol])]])
 
 (comment (test #'keywords-test))
 
