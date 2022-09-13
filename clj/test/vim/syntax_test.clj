@@ -166,7 +166,14 @@
     ":a:" (partial = [emptyKeyword :clojureSymbol emptyKeyword])
     ":a/" (partial = [:clojureKeywordNsColon :clojureKeywordNs :clojureKeywordNsSeparator])
     ":/" (partial =  [:clojureKeywordNsColon :clojureKeywordNsSeparator])
-    ":" (partial = [emptyKeyword])]])
+    ":" (partial = [emptyKeyword])
+    "a[:b/c]" (partial = [:clojureSymbol
+                          :clojureParen
+                          :clojureKeywordNsColon
+                          :clojureKeywordNs
+                          :clojureKeywordNsSeparator
+                          :clojureKeyword
+                          :clojureParen])]])
 
 (defsyntaxtest symbols-test
   ["%s"
@@ -194,7 +201,13 @@
     "a/" !sym
     "a/" !symWithNs
     "/" !sym
-    "#function[test/hello]" dispatchWithSymbolInside]])
+    "#function[test/hello]" dispatchWithSymbolInside
+    "a[b/c]" (partial = [:clojureSymbol
+                         :clojureParen
+                         :clojureSymbolNs
+                         :clojureSymbolNsSeparator
+                         :clojureSymbol
+                         :clojureParen])]])
 
 (comment (test #'keywords-test))
 
