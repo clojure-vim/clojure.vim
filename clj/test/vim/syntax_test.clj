@@ -173,7 +173,15 @@
                           :clojureKeywordNs
                           :clojureKeywordNsSeparator
                           :clojureKeyword
-                          :clojureParen])]])
+                          :clojureParen])
+    ":a[:b/c]" (partial = [:clojureKeywordNsColon
+                           :clojureKeyword
+                           :clojureParen
+                           :clojureKeywordNsColon
+                           :clojureKeywordNs
+                           :clojureKeywordNsSeparator
+                           :clojureKeyword
+                           :clojureParen])]])
 
 (defsyntaxtest symbols-test
   ["%s"
@@ -207,7 +215,13 @@
                          :clojureSymbolNs
                          :clojureSymbolNsSeparator
                          :clojureSymbol
-                         :clojureParen])]])
+                         :clojureParen])
+    "#'a/b" (partial = [:clojureDispatch
+                        :clojureDispatch
+                        :clojureSymbolNs
+                        :clojureSymbolNsSeparator
+                        :clojureSymbol
+                        :clojureParen])]])
 
 (comment (test #'keywords-test))
 

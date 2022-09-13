@@ -62,7 +62,7 @@ endif
 unlet! s:key
 delfunction s:syntax_keyword
 
-syntax match clojureKeywordNs contained "\v[^/: ']+[^/ ']*\ze/"
+syntax match clojureKeywordNs contained "\v[^ \n\r\t()\[\]{}";@^`~\\\/'#]+\ze\/"
 syntax match clojureKeywordNsSeparator contained "/"
 syntax match clojureKeywordNsColon contained "\v<:{1,2}"
 " Keywords are symbols:
