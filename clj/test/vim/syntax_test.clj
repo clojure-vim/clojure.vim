@@ -2,13 +2,54 @@
 ;;          Joel Holdbrooks <cjholdbrooks@gmail.com>
 
 (ns vim.syntax-test
-  (:require [vim.test :refer [defpredicates defsyntaxtest]]))
+  (:require [vim.test :refer [defpredicates defsyntaxtest def-eq-predicates]]))
 
 ;; defpredicates also register not-equal vars, this is just for clj-kondo
 (declare !number !regexp-escape !regexp-posix-char-class !regexp-quantifier)
 
 (defpredicates number :clojureNumber)
-(defpredicates kw :clojureKeyword)
+(def-eq-predicates kw [:clojureKeywordNsColon :clojureKeyword])
+(def-eq-predicates kwCurrentNs [:clojureKeywordNsColon :clojureKeywordNsColon :clojureKeyword])
+(def-eq-predicates kwWithNs [:clojureKeywordNsColon :clojureKeywordNs :clojureKeywordNsSeparator :clojureKeyword])
+(def-eq-predicates kwWithNs3_4 [:clojureKeywordNsColon
+                                :clojureKeywordNs
+                                :clojureKeywordNs
+                                :clojureKeywordNs
+                                :clojureKeywordNsSeparator
+                                :clojureKeyword
+                                :clojureKeyword
+                                :clojureKeyword
+                                :clojureKeyword])
+(def-eq-predicates sym [:clojureSymbol])
+(def-eq-predicates symWithNs [:clojureSymbol])
+(def-eq-predicates symWithNs_tripleBody [:clojureKeywordNsColon
+                                         :clojureKeywordNs :clojureKeywordNsSeparator
+                                         :clojureKeywordNs :clojureKeywordNsSeparator
+                                         :clojureKeywordNs :clojureKeywordNsSeparator
+                                         :clojureKeyword])
+(def-eq-predicates kwWithNamedNs [:clojureKeywordNsColon :clojureKeywordNsColon
+                                  :clojureKeywordNs :clojureKeywordNsSeparator :clojureKeyword])
+(def-eq-predicates dispatchWithSymbolInside [:clojureDispatch
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureParen
+                                             :clojureSymbolNs
+                                             :clojureSymbolNs
+                                             :clojureSymbolNs
+                                             :clojureSymbolNs
+                                             :clojureSymbolNsSeparator
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureSymbol
+                                             :clojureParen])
 (defpredicates character :clojureCharacter)
 (defpredicates regexp :clojureRegexp)
 (defpredicates regexp-delimiter :clojureRegexpDelimiter)
@@ -108,23 +149,78 @@
 
 (comment (test #'test-character-literals))
 
+(def emptyKeyword (keyword ""))
+
 (defsyntaxtest keywords-test
   ["%s"
    [":1" kw
     ":A" kw
     ":a" kw
-    ":αβγ" kw
-    "::a" kw
-    ":a/b" kw
-    ":a:b" kw
-    ":a:b/:c:b" kw
-    ":a/b/c/d" kw
-    "::a/b" kw
-    "::" !kw
-    ":a:" !kw
-    ":a/" !kw
-    ; ":/" !kw ; This is legal, but for simplicity we do not match it
-    ":" !kw]])
+    ":αβγ" (partial = [:clojureKeywordNsColon :clojureKeyword :clojureKeyword :clojureKeyword])
+    "::a" kwCurrentNs
+    ":a/b" kwWithNs
+    ":a:b/:c:b" kwWithNs3_4
+    ":a/b/c/d" symWithNs_tripleBody
+    "::a/b" kwWithNamedNs
+    "::" (partial = [emptyKeyword emptyKeyword])
+    ":a:" (partial = [emptyKeyword :clojureSymbol emptyKeyword])
+    ":a/" (partial = [:clojureKeywordNsColon :clojureKeywordNs :clojureKeywordNsSeparator])
+    ":/" (partial =  [:clojureKeywordNsColon :clojureKeywordNsSeparator])
+    ":" (partial = [emptyKeyword])
+    "a[:b/c]" (partial = [:clojureSymbol
+                          :clojureParen
+                          :clojureKeywordNsColon
+                          :clojureKeywordNs
+                          :clojureKeywordNsSeparator
+                          :clojureKeyword
+                          :clojureParen])
+    ":a[:b/c]" (partial = [:clojureKeywordNsColon
+                           :clojureKeyword
+                           :clojureParen
+                           :clojureKeywordNsColon
+                           :clojureKeywordNs
+                           :clojureKeywordNsSeparator
+                           :clojureKeyword
+                           :clojureParen])]])
+
+(defsyntaxtest symbols-test
+  ["%s"
+   ["1" !sym
+    "1" !symWithNs
+    "A" sym
+    "a" sym
+    "αβγ" (partial = [:clojureSymbol :clojureSymbol :clojureSymbol])
+    "a/b" (partial = [:clojureSymbolNs :clojureSymbolNsSeparator :clojureSymbol])
+    "a:b" (partial = [:clojureSymbol :clojureSymbol :clojureSymbol])
+    "a:b/:c:b" (partial = [:clojureSymbolNs
+                           :clojureSymbolNs
+                           :clojureSymbolNs
+                           :clojureSymbolNsSeparator
+                           :clojureSymbol
+                           :clojureSymbol
+                           :clojureSymbol
+                           :clojureSymbol])
+    "a/b/c/d" (partial = [:clojureSymbolNs :clojureSymbolNsSeparator
+                          :clojureSymbolNs :clojureSymbolNsSeparator
+                          :clojureSymbolNs :clojureSymbolNsSeparator
+                          :clojureSymbol])
+    "a:" !sym
+    "a:" !symWithNs
+    "a/" !sym
+    "a/" !symWithNs
+    "/" !sym
+    "#function[test/hello]" dispatchWithSymbolInside
+    "a[b/c]" (partial = [:clojureSymbol
+                         :clojureParen
+                         :clojureSymbolNs
+                         :clojureSymbolNsSeparator
+                         :clojureSymbol
+                         :clojureParen])
+    "#'a/b" (partial = [:clojureDispatch
+                        :clojureDispatch
+                        :clojureSymbolNs
+                        :clojureSymbolNsSeparator
+                        :clojureSymbol])]])
 
 (comment (test #'keywords-test))
 
@@ -403,8 +499,7 @@
     ;; (?>X)              X, as an independent, non-capturing group
     "(?>X)" regexp-mod
 
-    "(?X)" !regexp-mod
-    ]]
+    "(?X)" !regexp-mod]]
   ["#%s"
    [;; Backslashes with character classes
     "\"[\\\\]\"" (partial = [:clojureRegexpDelimiter :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpCharClass :clojureRegexpDelimiter])
