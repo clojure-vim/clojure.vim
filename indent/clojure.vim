@@ -23,14 +23,8 @@ setlocal indentkeys=!,o,O
 
 " TODO: ignore 'lisp' and 'lispwords' options (actually, turn them off?)
 
-" TODO: Optional Vim9script implementations of hotspot/bottleneck functions.
+" TODO: Optional Vim9script implementations of hotspot/bottleneck functions?
 " FIXME: fallback case when syntax highlighting is disabled.
-
-" Function to get the indentation of a line.
-" function! s:GetIndent(lnum)
-" 	let l = getline(a:lnum)
-" 	return len(l) - len(trim(l, " \t", 1))
-" endfunction
 
 function! s:GetSynIdName(line, col)
 	return synIDattr(synID(a:line, a:col, 0), 'name')
@@ -48,16 +42,8 @@ function! s:NotAStringDelimiter()
 	return ! s:SyntaxMatch('stringdelimiter', line('.'), col('.'))
 endfunction
 
-function! s:IsInString()
-	return s:SyntaxMatch('string', line('.'), col('.'))
-endfunction
-
 function! s:NotARegexpDelimiter()
 	return ! s:SyntaxMatch('regexpdelimiter', line('.'), col('.'))
-endfunction
-
-function! s:IsInRegex()
-	return s:SyntaxMatch('regex', line('.'), col('.'))
 endfunction
 
 function! s:Conf(opt, default)
@@ -68,28 +54,18 @@ function! s:ShouldAlignMultiLineStrings()
 	return s:Conf('clojure_align_multiline_strings', 0)
 endfunction
 
-function! s:ClosestMatch(match1, match2)
-	let [_, coord1] = a:match1
-	let [_, coord2] = a:match2
-	if coord1[0] < coord2[0]
-		return a:match2
-	elseif coord1[0] == coord2[0] && coord1[1] < coord2[1]
-		return a:match2
-	else
-		return a:match1
-	endif
-endfunction
-
 " Wrapper around "searchpairpos" that will automatically set "s:best_match" to
 " the closest pair match and continuously optimise the "stopline" value for
 " later searches.  This results in a significant performance gain by reducing
 " the number of syntax lookups that need to take place.
 function! s:CheckPair(name, start, end, skipfn)
-	let pos = searchpairpos(a:start, '', a:end, 'bznW', a:skipfn, s:best_match[1][0])
-	let s:best_match = s:ClosestMatch(s:best_match, [a:name, pos])
+	let prevln = s:best_match[1][0]
+	let pos = searchpairpos(a:start, '', a:end, 'bznW', a:skipfn, prevln)
+	if prevln < pos[0] || (prevln == pos[0] && s:best_match[1][1] < pos[1])
+		let s:best_match = [a:name, pos]
+	endif
 endfunction
 
-" Only need to search up.  Never down.
 function! s:GetClojureIndent()
 	let lnum = v:lnum
 
@@ -102,9 +78,10 @@ function! s:GetClojureIndent()
 	call s:CheckPair('vec', '\[', '\]', function('<SID>IgnoredRegion'))
 	call s:CheckPair('map',  '{',  '}', function('<SID>IgnoredRegion'))
 
-	if s:IsInString()
+	let synname = s:GetSynIdName(lnum, col('.'))
+	if synname =~? 'string'
 		call s:CheckPair('str', '"', '"', function('<SID>NotAStringDelimiter'))
-	elseif s:IsInRegex()
+	elseif synname =~? 'regex'
 		call s:CheckPair('reg', '#\zs"', '"', function('<SID>NotARegexpDelimiter'))
 	endif
 
@@ -114,26 +91,21 @@ function! s:GetClojureIndent()
 
 	if formtype == 'top'
 		" At the top level, no indent.
-		" echom 'At the top level!'
 		return 0
 	elseif formtype == 'lst'
-		" echom 'Special format rules!'
-		" TODO
-		" Grab text!
+		" Inside a list.
+		" TODO Begin analysis and apply rules!
 		" echom getline(coord[0], lnum - 1)
-		" Begin lexing!
 		return coord[1] + 1
 	elseif formtype == 'vec' || formtype == 'map'
 		" Inside a vector, map or set.
 		return coord[1]
-	elseif formtype == 'reg'
-		" Inside a regex.
-		" echom 'Inside a regex!'
-		return coord[1] - (s:ShouldAlignMultiLineStrings() ? 0 : 2)
 	elseif formtype == 'str'
 		" Inside a string.
-		" echom 'Inside a string!'
 		return coord[1] - (s:ShouldAlignMultiLineStrings() ? 0 : 1)
+	elseif formtype == 'reg'
+		" Inside a regex.
+		return coord[1] - (s:ShouldAlignMultiLineStrings() ? 0 : 2)
 	endif
 
 	return 2
