@@ -22,7 +22,6 @@ setlocal softtabstop=2 shiftwidth=2 expandtab
 setlocal indentkeys=!,o,O
 
 " TODO: ignore 'lisp' and 'lispwords' options (actually, turn them off?)
-
 " TODO: Optional Vim9script implementations of hotspot/bottleneck functions?
 " FIXME: fallback case when syntax highlighting is disabled.
 
@@ -75,8 +74,8 @@ function! s:GetClojureIndent()
 	let s:best_match = ['top', [0, 0]]
 
 	call s:CheckPair('lst',  '(',  ')', function('<SID>IgnoredRegion'))
-	call s:CheckPair('vec', '\[', '\]', function('<SID>IgnoredRegion'))
 	call s:CheckPair('map',  '{',  '}', function('<SID>IgnoredRegion'))
+	call s:CheckPair('vec', '\[', '\]', function('<SID>IgnoredRegion'))
 
 	let synname = s:GetSynIdName(lnum, col('.'))
 	if synname =~? 'string'
