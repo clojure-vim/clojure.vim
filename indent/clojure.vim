@@ -21,8 +21,6 @@ setlocal noautoindent nosmartindent nolisp
 setlocal softtabstop=2 shiftwidth=2 expandtab
 setlocal indentkeys=!,o,O
 
-" TODO: Write an optional Vim9 script version for better performance?
-
 function! s:GetSynIdName(line, col)
 	return synIDattr(synID(a:line, a:col, 0), 'name')
 endfunction
@@ -67,13 +65,6 @@ function! s:GetClojureIndent()
 	" Move cursor to the first column of the line we want to indent.
 	call cursor(v:lnum, 1)
 
-	let s:best_match = ['top', [0, 0]]
-
-	let IgnoredRegionFn = function('<SID>IgnoredRegion')
-	call s:CheckPair('lst',  '(',  ')', IgnoredRegionFn)
-	call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
-	call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
-
 	" Improve accuracy of string detection when a newline is entered.
 	if empty(getline(v:lnum))
 		let strline = v:lnum - 1
@@ -82,10 +73,17 @@ function! s:GetClojureIndent()
 		let synname = s:GetSynIdName(v:lnum, 1)
 	endif
 
+	let s:best_match = ['top', [0, 0]]
+
 	if synname =~? 'string'
 		call s:CheckPair('str', '"', '"', function('<SID>NotStringDelimiter'))
 	elseif synname =~? 'regex'
 		call s:CheckPair('reg', '#\zs"', '"', function('<SID>NotRegexpDelimiter'))
+	else
+		let IgnoredRegionFn = function('<SID>IgnoredRegion')
+		call s:CheckPair('lst',  '(',  ')', IgnoredRegionFn)
+		call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
+		call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
 	endif
 
 	" Find closest matching higher form.
@@ -109,9 +107,9 @@ function! s:GetClojureIndent()
 	elseif formtype == 'reg'
 		" Inside a regex.
 		return coord[1] - (s:ShouldAlignMultiLineStrings() ? 0 : 2)
+	else
+		return -1
 	endif
-
-	return 2
 endfunction
 
 if exists("*searchpairpos")
