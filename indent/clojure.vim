@@ -65,17 +65,23 @@ endfunction
 
 function! s:GetClojureIndent()
 	" Move cursor to the first column of the line we want to indent.
-	call cursor(v:lnum, 0)
+	call cursor(v:lnum, 1)
 
 	let s:best_match = ['top', [0, 0]]
 
 	let IgnoredRegionFn = function('<SID>IgnoredRegion')
-
 	call s:CheckPair('lst',  '(',  ')', IgnoredRegionFn)
 	call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
 	call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
 
-	let synname = s:GetSynIdName(v:lnum, col('.'))
+	" Improve accuracy of string detection when a newline is entered.
+	if empty(getline(v:lnum))
+		let strline = v:lnum - 1
+		let synname = s:GetSynIdName(strline, len(getline(strline)))
+	else
+		let synname = s:GetSynIdName(v:lnum, 1)
+	endif
+
 	if synname =~? 'string'
 		call s:CheckPair('str', '"', '"', function('<SID>NotStringDelimiter'))
 	elseif synname =~? 'regex'
