@@ -56,7 +56,7 @@ endfunction
 " Wrapper around "searchpairpos" that will automatically set "s:best_match" to
 " the closest pair match and optimises the "stopline" value for later
 " searches.  This results in a significant performance gain by reducing the
-" number of syntax lookups that need to take place.
+" search distance and number of syntax lookups that need to take place.
 function! s:CheckPair(name, start, end, SkipFn)
 	let prevln = s:best_match[1][0]
 	let pos = searchpairpos(a:start, '', a:end, 'bznW', a:SkipFn, prevln)
@@ -107,15 +107,6 @@ function! s:GetClojureIndent()
 	elseif formtype ==# 'str' || formtype ==# 'reg'
 		" Mimic multi-line string indentation behaviour in VS Code and
 		" Emacs.
-		"
-		" Scenarios:
-		"   - "=" operator should NOT alter indentation within
-		"     multi-line strings.
-		"   - Changes made while in insert mode (e.g. "<CR>"), should
-		"     use standard string indent.
-		"   - All other commands from normal mode (e.g. "o" and "O")
-		"     should trigger normal string indent.
-
 		let m = mode()
 		if m ==# 'i' || (m ==# 'n' && ! (v:operator ==# '=' && state() =~# 'o'))
 			" If in insert mode, or (in normal mode and last
@@ -141,9 +132,8 @@ endfunction
 if exists("*searchpairpos")
 	setlocal indentexpr=s:GetClojureIndent()
 else
-	" If searchpairpos is not available, fallback to normal lisp
-	" indenting.
-	setlocal lisp indentexpr=
+	" If "searchpairpos" is not available, fallback to Lisp indenting.
+	setlocal lisp
 endif
 
 let &cpoptions = s:save_cpo
