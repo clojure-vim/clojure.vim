@@ -46,6 +46,8 @@ function! s:Conf(opt, default)
 endfunction
 
 function! s:ShouldAlignMultiLineStrings()
+	" TODO: third option "-1" to default to "no indent", like traditional
+	" lisps?
 	return s:Conf('clojure_align_multiline_strings', 0)
 endfunction
 
@@ -89,27 +91,42 @@ function! s:GetClojureIndent()
 	" Find closest matching higher form.
 	let [formtype, coord] = s:best_match
 
-	if formtype == 'top'
+	if formtype ==# 'top'
 		" At the top level, no indent.
 		return 0
-	elseif formtype == 'lst'
+	elseif formtype ==# 'lst'
 		" Inside a list.
 		" TODO Begin analysis and apply rules!
 		" echom getline(coord[0], v:lnum - 1)
 		return coord[1] + 1
-	elseif formtype == 'vec' || formtype == 'map'
+	elseif formtype ==# 'vec' || formtype ==# 'map'
 		" Inside a vector, map or set.
 		return coord[1]
-	elseif formtype == 'str'
-		" Inside a string.
-		" TODO: maintain string and regex indentation when `=` is pressed.
-		return coord[1] - (s:ShouldAlignMultiLineStrings() ? 0 : 1)
-	elseif formtype == 'reg'
-		" Inside a regex.
-		return coord[1] - (s:ShouldAlignMultiLineStrings() ? 0 : 2)
-	else
-		return -1
+	elseif formtype ==# 'str' || formtype ==# 'reg'
+		" Mimic multi-line string indentation behaviour in VS Code and
+		" Emacs.
+		"
+		" Scenarios:
+		"   - "=" operator should NOT alter indentation within
+		"     multi-line strings.
+		"   - Changes made while in insert mode (e.g. "<CR>"), should
+		"     use standard string indent.
+		"   - All other commands from normal mode (e.g. "o" and "O")
+		"     should trigger normal string indent.
+
+		let m = mode()
+		if m ==# 'i' || (m ==# 'n' && ! (v:operator ==# '=' && state() =~# 'o'))
+			" If in insert mode, or (in normal mode and last
+			" operator is not "=" and is not currently active.
+			let l:indent = (s:ShouldAlignMultiLineStrings()
+						\ ? 0
+						\ : (formtype ==# 'reg' ? 2 : 1))
+			return coord[1] - l:indent
+		endif
 	endif
+
+	" Keep existing indent.
+	return -1
 endfunction
 
 if exists("*searchpairpos")
