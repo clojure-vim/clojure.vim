@@ -53,6 +53,27 @@ function! s:ShouldAlignMultiLineStrings()
 	return s:Conf('clojure_align_multiline_strings', 0)
 endfunction
 
+function! s:GetStringIndent(delim_pos, regex)
+	" Mimic multi-line string indentation behaviour in VS Code and Emacs.
+	let m = mode()
+	if m ==# 'i' || (m ==# 'n' && ! (v:operator ==# '=' && state('o') ==# 'o'))
+		" If in insert mode, or (in normal mode and last operator is
+		" not "=" and is not currently active.
+		let rule = s:ShouldAlignMultiLineStrings()
+		if rule == -1
+			return 0  " No indent.
+		elseif rule == 1
+			" Align with start of delimiter.
+			return a:delim_pos[1]
+		else
+			" Align with end of delimiter.
+			return a:delim_pos[1] - (a:regex ? 2 : 1)
+		endif
+	else
+		return -1  " Keep existing indent.
+	endif
+endfunction
+
 " Wrapper around "searchpairpos" that will automatically set "s:best_match" to
 " the closest pair match and optimises the "stopline" value for later
 " searches.  This results in a significant performance gain by reducing the
@@ -104,25 +125,12 @@ function! s:GetClojureIndent()
 	elseif formtype ==# 'vec' || formtype ==# 'map'
 		" Inside a vector, map or set.
 		return coord[1]
-	elseif formtype ==# 'str' || formtype ==# 'reg'
-		" Mimic multi-line string indentation behaviour in VS Code and
-		" Emacs.
-		let m = mode()
-		if m ==# 'i' || (m ==# 'n' && ! (v:operator ==# '=' && state() =~# 'o'))
-			" If in insert mode, or (in normal mode and last
-			" operator is not "=" and is not currently active.
-			let rule = s:ShouldAlignMultiLineStrings()
-			if rule == -1
-				" No indent.
-				return 0
-			elseif rule == 1
-				" Align with start of delimiter.
-				return coord[1]
-			else
-				" Align with end of delimiter.
-				return coord[1] - (formtype ==# 'reg' ? 2 : 1)
-			endif
-		endif
+	elseif formtype ==# 'str'
+		" Inside a string.
+		return s:GetStringIndent(coord, 0)
+	elseif formtype ==# 'reg'
+		" Inside a regular expression.
+		return s:GetStringIndent(coord, 1)
 	endif
 
 	" Keep existing indent.
