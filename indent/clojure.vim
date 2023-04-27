@@ -46,8 +46,10 @@ function! s:Conf(opt, default)
 endfunction
 
 function! s:ShouldAlignMultiLineStrings()
-	" TODO: third option "-1" to default to "no indent", like traditional
-	" lisps?
+	" Possible Values: (default is 0)
+	"   -1: Indent of 0, along left edge, like traditional Lisps.
+	"    0: Indent in alignment with string start delimiter.
+	"    1: Indent in alignment with end of the string start delimiter.
 	return s:Conf('clojure_align_multiline_strings', 0)
 endfunction
 
@@ -118,10 +120,17 @@ function! s:GetClojureIndent()
 		if m ==# 'i' || (m ==# 'n' && ! (v:operator ==# '=' && state() =~# 'o'))
 			" If in insert mode, or (in normal mode and last
 			" operator is not "=" and is not currently active.
-			let l:indent = (s:ShouldAlignMultiLineStrings()
-						\ ? 0
-						\ : (formtype ==# 'reg' ? 2 : 1))
-			return coord[1] - l:indent
+			let rule = s:ShouldAlignMultiLineStrings()
+			if rule == -1
+				" No indent.
+				return 0
+			elseif rule == 1
+				" Align with start of delimiter.
+				return coord[1]
+			else
+				" Align with end of delimiter.
+				return coord[1] - (formtype ==# 'reg' ? 2 : 1)
+			endif
 		endif
 	endif
 
