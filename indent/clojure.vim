@@ -120,9 +120,17 @@ function! s:GetClojureIndent()
 		call s:CheckPair('reg', '#\zs"', '"', function('<SID>NotRegexpDelimiter'))
 	else
 		let IgnoredRegionFn = function('<SID>IgnoredRegion')
-		call s:CheckPair('lst',  '(',  ')', IgnoredRegionFn)
-		call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
-		call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
+		if bufname() ==? '\.edn$'
+			" If EDN file, check list pair last.
+			call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
+			call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
+			call s:CheckPair('lst',  '(',  ')', IgnoredRegionFn)
+		else
+			" If CLJ file, check list pair first.
+			call s:CheckPair('lst',  '(',  ')', IgnoredRegionFn)
+			call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
+			call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
+		endif
 	endif
 
 	" Find closest matching higher form.
@@ -145,10 +153,10 @@ function! s:GetClojureIndent()
 	elseif formtype ==# 'reg'
 		" Inside a regular expression.
 		return s:GetStringIndent(coord, 1)
+	else
+		" Keep existing indent.
+		return -1
 	endif
-
-	" Keep existing indent.
-	return -1
 endfunction
 
 if exists("*searchpairpos")
