@@ -30,7 +30,7 @@ function! s:SyntaxMatch(pattern, line, col)
 endfunction
 
 function! s:IgnoredRegion()
-	return s:SyntaxMatch('\(string\|regex\|comment\|character\)', line('.'), col('.'))
+	return s:SyntaxMatch('\%(string\|regex\|comment\|character\)', line('.'), col('.'))
 endfunction
 
 function! s:NotStringDelimiter()
@@ -70,6 +70,19 @@ function! s:GetStringIndent(delim_pos, regex)
 	else
 		return -1  " Keep existing indent.
 	endif
+endfunction
+
+function! s:GetListIndent(delim_pos)
+	" TODO Begin analysis and apply rules!
+	let ln1 = getline(delim_pos[0])
+	let sym = get(split(ln1[delim_pos[1]:], '[[:space:],;()\[\]{}@\\"^~`]', 1), 0, -1)
+	if sym != -1 && ! empty(sym) && match(sym, '^[0-9:]') == -1
+		" TODO: align indentation.
+		return delim_pos[1] + 1  " 2 space indentation
+	endif
+
+	" TODO: switch between 1 vs 2 space indentation.
+	return delim_pos[1]  " 1 space indentation
 endfunction
 
 " Wrapper around "searchpairpos" that will automatically set "s:best_match" to
@@ -142,9 +155,7 @@ function! s:GetClojureIndent()
 		return 0
 	elseif formtype ==# 'lst'
 		" Inside a list.
-		" TODO Begin analysis and apply rules!
-		" echom getline(coord[0], v:lnum - 1)
-		return coord[1] + 1
+		return s:GetListIndent(coord)
 	elseif formtype ==# 'vec' || formtype ==# 'map'
 		" Inside a vector, map or set.
 		return coord[1]
