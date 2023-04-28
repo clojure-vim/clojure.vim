@@ -90,10 +90,11 @@ function! s:GetClojureIndent()
 	" Move cursor to the first column of the line we want to indent.
 	call cursor(v:lnum, 1)
 
-	" Improve accuracy of string detection when a newline is entered.
 	if empty(getline(v:lnum))
+		" Improves the accuracy of string detection when a newline is
+		" entered while in insert mode.
 		let strline = v:lnum - 1
-		let synname = s:GetSynIdName(strline, len(getline(strline)))
+		let synname = s:GetSynIdName(strline, strlen(getline(strline)))
 	else
 		let synname = s:GetSynIdName(v:lnum, 1)
 	endif
@@ -101,7 +102,20 @@ function! s:GetClojureIndent()
 	let s:best_match = ['top', [0, 0]]
 
 	if synname =~? 'string'
+		" Sometimes, string highlighting does not kick in correctly,
+		" until after this first "s:CheckPair" call, so we have to
+		" detect and attempt an automatic correction.
 		call s:CheckPair('str', '"', '"', function('<SID>NotStringDelimiter'))
+		let new_synname = s:GetSynIdName(v:lnum, 1)
+		if new_synname !=# synname
+			echoerr 'Misdetected string!  Retrying...'
+			let s:best_match = ['top', [0, 0]]
+			let synname = new_synname
+		endif
+	endif
+
+	if synname =~? 'string'
+		" We already checked this above, so pass through this block.
 	elseif synname =~? 'regex'
 		call s:CheckPair('reg', '#\zs"', '"', function('<SID>NotRegexpDelimiter'))
 	else
