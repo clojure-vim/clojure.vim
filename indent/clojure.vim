@@ -56,16 +56,13 @@ function! s:GetStringIndent(delim_pos, regex)
 	let m = mode()
 	if m ==# 'i' || (m ==# 'n' && ! s:EqualsOperatorInEffect())
 		" If in insert mode, or normal mode but "=" is not in effect.
-		let rule = s:Conf('clojure_align_multiline_strings', 0)
-		if rule == -1
-			" Indent along left edge, like traditional Lisps.
-			return 0
-		elseif rule == 1
-			" Indent in alignment with end of the string start delimiter.
-			return a:delim_pos[1]
-		else
-			" Indent in alignment with string start delimiter.
-			return a:delim_pos[1] - (a:regex ? 2 : 1)
+		let alignment = s:Conf('clojure_align_multiline_strings', 0)
+		" -1: Indent along left edge, like traditional Lisps.
+		"  0: Indent in alignment with end of the string start delimiter.
+		"  1: Indent in alignment with string start delimiter.
+		if     alignment == -1 | return 0
+		elseif alignment ==  1 | return a:delim_pos[1]
+		else                   | return a:delim_pos[1] - (a:regex ? 2 : 1)
 		endif
 	else
 		return -1  " Keep existing indent.
@@ -131,10 +128,10 @@ function! s:GetClojureIndent()
 	if synname =~? 'string'
 		" We already checked this above, so pass through this block.
 	elseif synname =~? 'regex'
-		call s:CheckPair('reg', '#\zs"', '"', function('<SID>NotRegexpDelimiter'))
+		call s:CheckPair('rex', '#\zs"', '"', function('<SID>NotRegexpDelimiter'))
 	else
 		let IgnoredRegionFn = function('<SID>IgnoredRegion')
-		if bufname() ==? '\.edn$'
+		if bufname() =~? '\.edn$'
 			" If EDN file, check list pair last.
 			call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
 			call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
@@ -147,27 +144,15 @@ function! s:GetClojureIndent()
 		endif
 	endif
 
-	" Find closest matching higher form.
+	" Calculate and return indent to use based on the matching form.
 	let [formtype, coord] = s:best_match
-
-	if formtype ==# 'top'
-		" At the top level, no indent.
-		return 0
-	elseif formtype ==# 'lst'
-		" Inside a list.
-		return s:GetListIndent(coord)
-	elseif formtype ==# 'vec' || formtype ==# 'map'
-		" Inside a vector, map or set.
-		return coord[1]
-	elseif formtype ==# 'str'
-		" Inside a string.
-		return s:GetStringIndent(coord, 0)
-	elseif formtype ==# 'reg'
-		" Inside a regular expression.
-		return s:GetStringIndent(coord, 1)
-	else
-		" Keep existing indent.
-		return -1
+	if     formtype ==# 'top' | return 0  " At top level, no indent.
+	elseif formtype ==# 'lst' | return s:GetListIndent(coord)
+	elseif formtype ==# 'vec' | return coord[1]  " Vector
+	elseif formtype ==# 'map' | return coord[1]  " Map/set
+	elseif formtype ==# 'str' | return s:GetStringIndent(coord, 0)
+	elseif formtype ==# 'rex' | return s:GetStringIndent(coord, 1)
+	else                      | return -1  " Keep existing indent.
 	endif
 endfunction
 
