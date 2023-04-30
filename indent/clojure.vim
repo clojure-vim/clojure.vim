@@ -21,24 +21,86 @@ setlocal noautoindent nosmartindent nolisp
 setlocal softtabstop=2 shiftwidth=2 expandtab
 setlocal indentkeys=!,o,O
 
-function! s:GetSynIdName(line, col)
-	return synIDattr(synID(a:line, a:col, 0), 'name')
+" Returns true if char_idx is preceded by an odd number of backslashes.
+function! s:IsEscaped(line_str, char_idx)
+	let ln = a:line_str[: a:char_idx - 1]
+	return (strlen(ln) - strlen(trim(ln, '\', 2))) % 2
 endfunction
 
-function! s:SyntaxMatch(pattern, line, col)
-	return s:GetSynIdName(a:line, a:col) =~? a:pattern
+let s:pairs = {'(': ')', '[': ']', '{': '}'}
+
+" TODO: Maybe write a Vim9script version of this?
+" Repeatedly search for tokens on the given line in reverse order building up
+" a list of tokens and their positions.  Ignores escaped tokens.
+function! s:AnalyseLine(line_num)
+	let tokens = []
+	let ln = getline(a:line_num)
+
+	while 1
+		" Due to legacy Vimscript being painfully slow, we literally
+		" have to move the cursor and perform searches which is
+		" ironically faster than for looping by character.
+		let token = searchpos('[()\[\]{};"]', 'bW', a:line_num)
+
+		if token == [0, 0] | break | endif
+		let t_idx = token[1] - 1
+		if s:IsEscaped(ln, t_idx) | continue | endif
+		let t_char = ln[t_idx]
+
+		if t_char ==# ';'
+			" Comment found, reset the token list for this line.
+			tokens = []
+		elseif t_char =~# '[()\[\]{}"]'
+			" Add token to the list.
+			call add(tokens, [t_char, token])
+		endif
+	endwhile
+
+	return tokens
 endfunction
 
-function! s:IgnoredRegion()
-	return s:SyntaxMatch('\%(string\|regex\|comment\|character\)', line('.'), col('.'))
-endfunction
+" This should also be capable of figuring out if we're in a multi-line string
+" or regex.
+function! s:InverseRead(lnum)
+	let lnum = a:lnum - 1
+	let tokens = []
 
-function! s:NotStringDelimiter()
-	return ! s:SyntaxMatch('stringdelimiter', line('.'), col('.'))
-endfunction
+	while lnum > 0
+		call cursor(lnum + 1, 1)
+		let line_tokens = s:AnalyseLine(lnum)
 
-function! s:NotRegexpDelimiter()
-	return ! s:SyntaxMatch('regexpdelimiter', line('.'), col('.'))
+		" let should_ignore = empty(a:tokens) ? 0 : (a:tokens[-1][0] ==# '"')
+
+		" Reduce "tokens" and "line_tokens".
+		for t in line_tokens
+			" TODO: attempt early termination.
+			if empty(tokens)
+				call add(tokens, t)
+			elseif t[0] ==# '"' && tokens[-1][0] ==# '"'
+				" TODO: track original start and ignore values
+				" inside strings.
+				call remove(tokens, -1)
+			elseif get(s:pairs, t[0], '') ==# tokens[-1][0]
+				" Matching pair: drop the last item in tokens.
+				call remove(tokens, -1)
+			else
+				" No match: append to token list.
+				call add(tokens, t)
+			endif
+		endfor
+
+		" echom 'Pass' lnum tokens
+
+		if ! empty(tokens) && has_key(s:pairs, tokens[0][0])
+			" TODO: on string match, check if string or regex.
+			" echom 'Match!' tokens[0]
+			return tokens[0]
+		endif
+
+		let lnum -= 1
+	endwhile
+
+	return ['^', [0, 0]]  " Default to top-level.
 endfunction
 
 function! s:Conf(opt, default)
@@ -51,7 +113,7 @@ function! s:EqualsOperatorInEffect()
 	return v:operator ==# '=' && state('o') ==# 'o'
 endfunction
 
-function! s:GetStringIndent(delim_pos, regex)
+function! s:GetStringIndent(delim_pos, is_regex)
 	" Mimic multi-line string indentation behaviour in VS Code and Emacs.
 	let m = mode()
 	if m ==# 'i' || (m ==# 'n' && ! s:EqualsOperatorInEffect())
@@ -62,7 +124,7 @@ function! s:GetStringIndent(delim_pos, regex)
 		"  1: Indent in alignment with string start delimiter.
 		if     alignment == -1 | return 0
 		elseif alignment ==  1 | return a:delim_pos[1]
-		else                   | return a:delim_pos[1] - (a:regex ? 2 : 1)
+		else                   | return a:delim_pos[1] - (a:is_regex ? 2 : 1)
 		endif
 	else
 		return -1  " Keep existing indent.
@@ -71,10 +133,12 @@ endfunction
 
 function! s:GetListIndent(delim_pos)
 	" TODO Begin analysis and apply rules!
+	" let lns = getline(delim_pos[0], v:lnum - 1)
 	let ln1 = getline(delim_pos[0])
 	let sym = get(split(ln1[delim_pos[1]:], '[[:space:],;()\[\]{}@\\"^~`]', 1), 0, -1)
 	if sym != -1 && ! empty(sym) && match(sym, '^[0-9:]') == -1
 		" TODO: align indentation.
+		" TODO: lookup rules.
 		return delim_pos[1] + 1  " 2 space indentation
 	endif
 
@@ -82,86 +146,21 @@ function! s:GetListIndent(delim_pos)
 	return delim_pos[1]  " 1 space indentation
 endfunction
 
-" Wrapper around "searchpairpos" that will automatically set "s:best_match" to
-" the closest pair match and optimises the "stopline" value for later
-" searches.  This results in a significant performance gain by reducing the
-" search distance and number of syntax lookups that need to take place.
-function! s:CheckPair(name, start, end, SkipFn)
-	let prevln = s:best_match[1][0]
-	let pos = searchpairpos(a:start, '', a:end, 'bznW', a:SkipFn, prevln)
-	if prevln < pos[0] || (prevln == pos[0] && s:best_match[1][1] < pos[1])
-		let s:best_match = [a:name, pos]
-	endif
-endfunction
-
-function! s:GetCurrentSynName(lnum)
-	if empty(getline(a:lnum))
-		" Improves the accuracy of string detection when a newline is
-		" entered while in insert mode.
-		let strline = a:lnum - 1
-		return s:GetSynIdName(strline, strlen(getline(strline)))
-	else
-		return s:GetSynIdName(a:lnum, 1)
-	endif
-endfunction
-
 function! s:GetClojureIndent()
-	" Move cursor to the first column of the line we want to indent.
-	call cursor(v:lnum, 1)
-
-	let s:best_match = ['top', [0, 0]]
-
-	let synname = s:GetCurrentSynName(v:lnum)
-	if synname =~? 'string'
-		call s:CheckPair('str', '"', '"', function('<SID>NotStringDelimiter'))
-		" Sometimes, string highlighting does not kick in correctly,
-		" until after this first "s:CheckPair" call, so we have to
-		" detect and attempt an automatic correction.
-		let new_synname = s:GetCurrentSynName(v:lnum)
-		if new_synname !=# synname
-			echoerr 'Misdetected string!  Retrying...'
-			let s:best_match = ['top', [0, 0]]
-			let synname = new_synname
-		endif
-	endif
-
-	if synname =~? 'string'
-		" We already checked this above, so pass through this block.
-	elseif synname =~? 'regex'
-		call s:CheckPair('rex', '#\zs"', '"', function('<SID>NotRegexpDelimiter'))
-	else
-		let IgnoredRegionFn = function('<SID>IgnoredRegion')
-		if bufname() =~? '\.edn$'
-			" If EDN file, check list pair last.
-			call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
-			call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
-			call s:CheckPair('lst',  '(',  ')', IgnoredRegionFn)
-		else
-			" If CLJ file, check list pair first.
-			call s:CheckPair('lst',  '(',  ')', IgnoredRegionFn)
-			call s:CheckPair('map',  '{',  '}', IgnoredRegionFn)
-			call s:CheckPair('vec', '\[', '\]', IgnoredRegionFn)
-		endif
-	endif
-
 	" Calculate and return indent to use based on the matching form.
-	let [formtype, coord] = s:best_match
-	if     formtype ==# 'top' | return 0  " At top level, no indent.
-	elseif formtype ==# 'lst' | return s:GetListIndent(coord)
-	elseif formtype ==# 'vec' | return coord[1]  " Vector
-	elseif formtype ==# 'map' | return coord[1]  " Map/set
-	elseif formtype ==# 'str' | return s:GetStringIndent(coord, 0)
-	elseif formtype ==# 'rex' | return s:GetStringIndent(coord, 1)
-	else                      | return -1  " Keep existing indent.
+	let [formtype, coord] = s:InverseRead(v:lnum)
+	if     formtype ==# '^'  | return 0  " At top-level, no indent.
+	elseif formtype ==# '('  | return s:GetListIndent(coord)
+	elseif formtype ==# '['  | return coord[1]  " Vector
+	elseif formtype ==# '{'  | return coord[1]  " Map/set
+	elseif formtype ==# '"'  | return s:GetStringIndent(coord, 0)
+	elseif formtype ==# '#"' | return s:GetStringIndent(coord, 1)
+	else                     | return -1  " Keep existing indent.
 	endif
 endfunction
 
-if exists("*searchpairpos")
-	setlocal indentexpr=s:GetClojureIndent()
-else
-	" If "searchpairpos" is not available, fallback to Lisp indenting.
-	setlocal lisp
-endif
+" TODO: lispoptions if exists.
+setlocal indentexpr=s:GetClojureIndent()
 
 let &cpoptions = s:save_cpo
 unlet! s:save_cpo
