@@ -21,6 +21,9 @@ setlocal noautoindent nosmartindent nolisp
 setlocal softtabstop=2 shiftwidth=2 expandtab
 setlocal indentkeys=!,o,O
 
+" NOTE: To debug this code, make sure to "set debug+=msg" otherwise errors
+" will occur silently.
+
 " TODO: After all optimisations create Vim9script variant of the core algorithm.
 
 " Returns "1" if position "i_char" in "line_str" is preceded by an odd number
@@ -65,8 +68,9 @@ endfunction
 
 let s:pairs = {'(': ')', '[': ']', '{': '}'}
 
-" TODO: refactor this procedure and optimise.
-" This procedure is essentially a lightweight Clojure reader.
+" This procedure is kind of like a really lightweight Clojure reader.  It
+" looks at the lines above the current line, tokenises them (from right to
+" left), and performs reductions to find the parent form and where it is.
 function! s:InsideForm(lnum)
 	" Reset cursor to first column of the line we wish to indent.
 	call cursor(a:lnum, 1)
@@ -80,25 +84,29 @@ function! s:InsideForm(lnum)
 	while lnum > 0
 		" Reduce tokens from line "lnum" into "tokens".
 		for tk in s:TokeniseLine(lnum)
-			" Keep track of the first string delimiter we see, as
-			" we'll need it later for multi-line strings/regexps.
-			if first_string_pos == [] && tk[0] ==# '"'
-				let first_string_pos = tk[1]
+			if tk[0] ==# '"'
+				" Keep track of the first string delimiter we
+				" see, as we'll need it later for multi-line
+				" strings/regexps.
+				if first_string_pos == []
+					let first_string_pos = tk[1]
+				endif
+
+				if ! empty(tokens) && tokens[-1][0] ==# '"'
+					let in_string = 0
+					call remove(tokens, -1)
+				else
+					let in_string = 1
+					call add(tokens, tk)
+				endif
+
+				continue
 			endif
 
 			" When in string ignore other tokens.
-			if in_string && tk[0] !=# '"'
-				continue
-			else
-				let in_string = 0
-			endif
+			if in_string | continue | endif
 
-			" TODO: early termination?
-			if empty(tokens)
-				call add(tokens, tk)
-			elseif tk[0] ==# '"' && tokens[-1][0] ==# '"'
-				call remove(tokens, -1)
-			elseif get(s:pairs, tk[0], '') ==# tokens[-1][0]
+			if ! empty(tokens) && get(s:pairs, tk[0], '') ==# tokens[-1][0]
 				" Matching pair: drop the last item in tokens.
 				call remove(tokens, -1)
 			else
@@ -184,6 +192,7 @@ function! s:ClojureIndent()
 endfunction
 
 " TODO: set lispoptions if exists.
+" https://github.com/vim/vim/commit/49846fb1a31de99f49d6a7e70efe685197423c84
 setlocal indentexpr=s:ClojureIndent()
 
 let &cpoptions = s:save_cpo
