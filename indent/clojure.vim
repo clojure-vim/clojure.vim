@@ -85,28 +85,23 @@ function! s:InsideForm(lnum)
 		" Reduce tokens from line "lnum" into "tokens".
 		for tk in s:TokeniseLine(lnum)
 			if tk[0] ==# '"'
-				" Keep track of the first string delimiter we
-				" see, as we'll need it later for multi-line
-				" strings/regexps.
-				if first_string_pos == []
-					let first_string_pos = tk[1]
-				endif
-
-				if ! empty(tokens) && tokens[-1][0] ==# '"'
+				if in_string
 					let in_string = 0
 					call remove(tokens, -1)
 				else
 					let in_string = 1
 					call add(tokens, tk)
+
+					" Track the first string delimiter we
+					" see, as we may need it later for
+					" multi-line strings/regexps.
+					if first_string_pos == []
+						let first_string_pos = tk
+					endif
 				endif
-
-				continue
-			endif
-
-			" When in string ignore other tokens.
-			if in_string | continue | endif
-
-			if ! empty(tokens) && get(s:pairs, tk[0], '') ==# tokens[-1][0]
+			elseif in_string
+				" In string: ignore other tokens.
+			elseif ! empty(tokens) && get(s:pairs, tk[0], '') ==# tokens[-1][0]
 				" Matching pair: drop the last item in tokens.
 				call remove(tokens, -1)
 			else
@@ -115,9 +110,8 @@ function! s:InsideForm(lnum)
 			endif
 		endfor
 
-		" echom 'Pass' lnum tokens
-
 		if ! empty(tokens) && has_key(s:pairs, tokens[0][0])
+			" Match found!
 			return tokens[0]
 		endif
 
@@ -127,7 +121,7 @@ function! s:InsideForm(lnum)
 	if ! empty(tokens) && tokens[0][0] ==# '"'
 		" Must have been in a multi-line string or regular expression
 		" as the string was never closed.
-		return ['"', first_string_pos]
+		return first_string_pos
 	endif
 
 	return ['^', [0, 0]]  " Default to top-level.
@@ -191,8 +185,7 @@ function! s:ClojureIndent()
 	endif
 endfunction
 
-" TODO: set lispoptions if exists.
-" https://github.com/vim/vim/commit/49846fb1a31de99f49d6a7e70efe685197423c84
+" TODO: setl lisp lispoptions=expr:1 if exists.  "has('patch-9.0.0761')"
 setlocal indentexpr=s:ClojureIndent()
 
 let &cpoptions = s:save_cpo
