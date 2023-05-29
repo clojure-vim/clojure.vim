@@ -56,7 +56,7 @@ function! s:TokeniseLine(line_num)
 		let t_char = ln[t_idx]
 		if t_char ==# ';'
 			" Comment found, reset the token list for this line.
-			tokens = []
+			let tokens = []
 		elseif t_char =~# '[()\[\]{}"]'
 			" Add token to the list.
 			call add(tokens, [t_char, token])
