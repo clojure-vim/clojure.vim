@@ -43,7 +43,7 @@ function! s:TokeniseLine(line_num)
 	while 1
 		" We perform searches within the buffer (and move the cusor)
 		" for better performance than looping char by char in a line.
-		let token = searchpos('[()\[\]{};"]', 'bW', a:line_num)
+		let token = searchpos('[()[\]{};"]', 'bW', a:line_num)
 
 		" No more matches, exit loop.
 		if token == [0, 0] | break | endif
