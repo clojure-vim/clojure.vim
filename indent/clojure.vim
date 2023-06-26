@@ -163,52 +163,49 @@ function! s:ListIndent(delim_pos)
 	" the subforms within the form being formatted to avoid second parsing
 	" step.
 
-	" TODO: The overcomplicated list indentation rules in Clojure!
-	" 1. If starts with a symbol or keyword: extract it.
-	"    1.1. Look up in rules table.
-	"         1.1.1. See number for forms forward to lookup.
-	"         1.1.2. Start parsing forwards "x" forms.  (Skip metadata)
-	"         1.1.3. Apply indentation.
-	"    1.2. Not found, goto 2.
-	" 2. Else, format like a function.
-	"    2.1. Is first operand on the same line?  (Treat metadata as args)
-	"         2.1.1. Indent subsequent lines to align with first operand.
-	"    2.2. Else.
-	"         2.2.1. Indent 1 or 2 spaces.
-
 	call cursor(a:delim_pos)
 	let ln = getline(a:delim_pos[0])
 	let base_indent = a:delim_pos[1]
 
 	" 1. TODO: Macro/rule indentation
-	" let syms = split(ln[base_indent:], '[[:space:],;()\[\]{}@\\"^~`]', 1)
+	"    if starts with a symbol or keyword: extract it.
+	"      - Look up in rules table.
+	"        - See number for forms forward to lookup.
+	"        - Start parsing forwards "x" forms.  (Skip metadata)
+	"        - Apply indentation.
+	"    else, not found, go to 2.
 	" TODO: complex indentation (e.g. letfn)
 	" TODO: namespaces.
+	" let syms = split(ln[base_indent:], '[[:space:],;()\[\]{}@\\"^~`]', 1)
 
 	" 2. Function indentation
-	let cur_pos = [a:delim_pos[0], a:delim_pos[1] + 1]
-	call cursor(cur_pos)
+	"    if first operand is on the same line?  (Treat metadata as args.)
+	"      - Indent subsequent lines to align with first operand.
+	"    else
+	"      - Indent 1 or 2 spaces.
+	let indent_style = s:Conf('clojure_indent_style', 'always-align')
+	if indent_style !=# 'always-indent'
+		let init_col = a:delim_pos[1] + 1
+		call cursor(a:delim_pos[0], init_col)
 
-	let ch = ln[cur_pos[1] - 1]
-	if ch =~# '[([{]'
-		normal! %w
-	elseif ch !~# '[;"]'
-		normal! w
+		" TODO: replace cursor translation with searching?
+		let ch = ln[base_indent]
+		if ch ==# '(' || ch ==# '[' || ch ==# '{'
+			normal! %w
+		elseif ch !=# ';' && ch !=# '"'
+			normal! w
+		endif
+
+		let cur_pos = getcurpos()[1:2]
+		if a:delim_pos[0] == cur_pos[0] && init_col != cur_pos[1]
+			" Align operands.
+			return cur_pos[1] - 1
+		endif
 	endif
 
-	let new_cur_pos = getcurpos()[1:2]
-
-	" TODO: option to disable operand-alignment.
-	if cur_pos[0] == new_cur_pos[0] && cur_pos[1] != new_cur_pos[1]
-		" Align operands
-		return new_cur_pos[1] - 1
-	endif
-
-	" TODO: create an alternative option with a better name.
-	" <https://github.com/clojure-emacs/clojure-mode/#indentation-of-function-forms>
-	" Base indentation for forms.  When "clojure_align_subforms" is "1",
-	" use 1 space indentation, otherwise 2 space indentation.
-	return base_indent + ! s:Conf('clojure_align_subforms', 1)
+	" Fallback indentation for operands.  When "clojure_indent_style" is
+	" "always-align", use 1 space indentation, else 2 space indentation.
+	return base_indent + (indent_style !=# 'always-align')
 endfunction
 
 function! s:ClojureIndent()
