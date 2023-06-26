@@ -24,7 +24,10 @@ setlocal indentkeys=!,o,O
 " NOTE: To debug this code, make sure to "set debug+=msg" otherwise errors
 " will occur silently.
 
-" TODO: After all optimisations create Vim9script variant of the core algorithm.
+" Get the value of a configuration option.
+function! s:Conf(opt, default)
+	return get(b:, a:opt, get(g:, a:opt, a:default))
+endfunction
 
 " Returns "1" if position "i_char" in "line_str" is preceded by an odd number
 " of backslash characters (i.e. escaped).
@@ -33,9 +36,10 @@ function! s:IsEscaped(line_str, i_char)
 	return (strlen(ln) - strlen(trim(ln, '\', 2))) % 2
 endfunction
 
-" Repeatedly search for tokens on a given line (in reverse order) building up
-" a list of tokens and their positions.  Ignores escaped tokens.  Does not
-" care about strings, as that is handled by "s:InsideForm".
+" Repeatedly search for indentation significant Clojure tokens on a given line
+" (in reverse order) building up a list of tokens and their positions.
+" Ignores escaped tokens.  Does not care about strings, which is handled by
+" "s:InsideForm".
 function! s:TokeniseLine(line_num)
 	let tokens = []
 	let ln = getline(a:line_num)
@@ -68,9 +72,10 @@ endfunction
 
 let s:pairs = {'(': ')', '[': ']', '{': '}'}
 
-" This procedure is kind of like a really lightweight Clojure reader.  It
-" looks at the lines above the current line, tokenises them (from right to
-" left), and performs reductions to find the parent form and where it is.
+" This procedure is kind of like a really lightweight Clojure reader that
+" analyses from the inside out.  It looks at the lines above the current line,
+" tokenises them (from right to left), and performs reductions to find the
+" parent form and where it is.
 function! s:InsideForm(lnum)
 	" Reset cursor to first column of the line we wish to indent.
 	call cursor(a:lnum, 1)
@@ -125,11 +130,6 @@ function! s:InsideForm(lnum)
 	endif
 
 	return ['^', [0, 0]]  " Default to top-level.
-endfunction
-
-" Get the value of a configuration option.
-function! s:Conf(opt, default)
-	return get(b:, a:opt, get(g:, a:opt, a:default))
 endfunction
 
 " Returns "1" when the previous operator used was "=" and is currently active.
