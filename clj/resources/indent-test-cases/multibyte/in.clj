@@ -1,3 +1,3 @@
-(let [Δt (if foo
+        (let [Δt (if foo
            bar
-           baz)])
+      baz)])

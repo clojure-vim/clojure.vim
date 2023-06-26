@@ -160,8 +160,7 @@ endfunction
 
 function! s:ListIndent(delim_pos)
 	" TODO: attempt to extend "s:InsideForm" to provide information about
-	" the subforms within the form being formatted to avoid second parsing
-	" step.
+	" the subforms being formatted to avoid second parsing step.
 
 	call cursor(a:delim_pos)
 	let ln = getline(a:delim_pos[0])
@@ -196,7 +195,7 @@ function! s:ListIndent(delim_pos)
 			normal! w
 		endif
 
-		let cur_pos = getcurpos()[1:2]
+		let cur_pos = getcursorcharpos()[1:2]
 		if a:delim_pos[0] == cur_pos[0] && init_col != cur_pos[1]
 			" Align operands.
 			return cur_pos[1] - 1
