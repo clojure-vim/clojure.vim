@@ -132,9 +132,15 @@ function! s:InsideForm(lnum)
 	return ['^', [0, 0]]  " Default to top-level.
 endfunction
 
-" Returns "1" when the previous operator used was "=" and is currently active.
+" Returns "1" when the "=" operator is currently active.
 function! s:EqualsOperatorInEffect()
-	return v:operator ==# '=' && state('o') ==# 'o'
+	if has('nvim')
+		" Neovim has no `state()` function so fallback to indenting
+		" strings.
+		return 0
+	else
+		return v:operator ==# '=' && state('o') ==# 'o'
+	endif
 endfunction
 
 function! s:StringIndent(delim_pos)
