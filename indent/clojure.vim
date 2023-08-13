@@ -157,7 +157,7 @@ function! s:InsideForm(lnum)
 			endif
 		endfor
 
-		if ! empty(tokens) && has_key(s:pairs, tokens[0][0])
+		if ! empty(tokens) && has_key(s:pairs, tokens[0][0]) && ! in_string
 			" Match found!
 			return tokens[0]
 		endif
@@ -165,7 +165,7 @@ function! s:InsideForm(lnum)
 		let lnum -= 1
 	endwhile
 
-	if ! empty(tokens) && tokens[0][0] ==# '"'
+	if (in_string && first_string_pos != []) || (! empty(tokens) && tokens[0][0] ==# '"')
 		" Must have been in a multi-line string or regular expression
 		" as the string was never closed.
 		return first_string_pos
