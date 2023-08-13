@@ -81,6 +81,11 @@ function! s:IsEscaped(line_str, i_char)
 	return (strlen(ln) - strlen(trim(ln, '\', 2))) % 2
 endfunction
 
+function! s:PosToCharPos(pos)
+	call cursor(a:pos)
+	return getcursorcharpos()[1:2]
+endfunction
+
 " Repeatedly search for indentation significant Clojure tokens on a given line
 " (in reverse order) building up a list of tokens and their positions.
 " Ignores escaped tokens.  Does not care about strings, which is handled by
@@ -195,11 +200,11 @@ function! s:StringIndent(delim_pos)
 		"  0: Indent in alignment with end of the string start delimiter.
 		"  1: Indent in alignment with string start delimiter.
 		if     alignment == -1 | return 0
-		elseif alignment ==  1 | return a:delim_pos[1]
+		elseif alignment ==  1 | return s:PosToCharPos(a:delim_pos)[1]
 		else
 			let col = a:delim_pos[1]
 			let is_regex = col > 1 && getline(a:delim_pos[0])[col - 2] ==# '#'
-			return col - (is_regex ? 2 : 1)
+			return s:PosToCharPos(a:delim_pos)[1] - (is_regex ? 2 : 1)
 		endif
 	else
 		return -1  " Keep existing indent.
@@ -210,15 +215,15 @@ function! s:ListIndent(delim_pos)
 	" TODO: extend "s:InsideForm" to provide information about the
 	" subforms being formatted to avoid second parsing step.
 
-	call cursor(a:delim_pos)
+	let base_indent = s:PosToCharPos(a:delim_pos)[1]
 	let ln = getline(a:delim_pos[0])
-	let base_indent = a:delim_pos[1]
+	let delim_col = a:delim_pos[1]
 
 	" 1. Macro/rule indentation
 	"    if starts with a symbol, extract it.
 	"      - Split namespace off symbol and #'/' syntax.
 	"      - Check against pattern rules and apply indent on match.
-	"      - TODO: Look up in rules table and apply indent on match.
+	"      - Look up in rules table and apply indent on match.
 	"    else, not found, go to 2.
 	"
 	" TODO: handle complex indentation (e.g. letfn) and introduce
@@ -227,7 +232,7 @@ function! s:ListIndent(delim_pos)
 	" other indentation options.
 	"
 	" TODO: replace `clojure_fuzzy_indent_patterns` with `clojure_indent_patterns`
-	let syms = split(ln[base_indent:], '[[:space:],;()\[\]{}@\\"^~`]', 1)
+	let syms = split(ln[delim_col:], '[[:space:],;()\[\]{}@\\"^~`]', 1)
 	if !empty(syms)
 		let sym = syms[0]
 		" TODO: strip #' and ' from front of symbol.
@@ -258,11 +263,11 @@ function! s:ListIndent(delim_pos)
 	"      - Indent 1 or 2 spaces.
 	let indent_style = s:Conf('clojure_indent_style', 'always-align')
 	if indent_style !=# 'always-indent'
-		let init_col = a:delim_pos[1] + 1
+		let init_col = delim_col + 1
 		call cursor(a:delim_pos[0], init_col)
 
 		" TODO: replace cursor translation with searching?
-		let ch = ln[base_indent]
+		let ch = ln[delim_col]
 		if ch ==# '(' || ch ==# '[' || ch ==# '{'
 			normal! %w
 		elseif ch !=# ';' && ch !=# '"'
@@ -286,8 +291,8 @@ function! s:ClojureIndent()
 	let [form, pos] = s:InsideForm(v:lnum)
 	if     form ==# '^' | return 0  " At top-level, no indent.
 	elseif form ==# '(' | return s:ListIndent(pos)
-	elseif form ==# '[' | return pos[1]
-	elseif form ==# '{' | return pos[1]
+	elseif form ==# '[' | return s:PosToCharPos(pos)[1]
+	elseif form ==# '{' | return s:PosToCharPos(pos)[1]
 	elseif form ==# '"' | return s:StringIndent(pos)
 	else                | return -1  " Keep existing indent.
 	endif
