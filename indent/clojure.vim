@@ -24,6 +24,51 @@ setlocal indentkeys=!,o,O
 " NOTE: To debug this code, make sure to "set debug+=msg" otherwise errors
 " will occur silently.
 
+if !exists('g:clojure_fuzzy_indent_patterns')
+	let g:clojure_fuzzy_indent_patterns = [
+	\   "\v^with-%(meta|out-str|loading-context)\@!",
+	\   "^def",
+	\   "^let"
+	\ ]
+endif
+
+if !exists('g:clojure_indent_rules')
+	" Defaults copied from: https://github.com/clojure-emacs/clojure-mode/blob/0e62583b5198f71856e4d7b80e1099789d47f2ed/clojure-mode.el#L1800-L1875
+	let g:clojure_indent_rules = {
+	\   "ns": 1,
+	\   "fn": 1, "def": 1, "defn": 1, "bound-fn": 1,
+	\   "if": 1, "if-not": 1, "if-some": 1, "if-let": 1,
+	\   "when": 1, "when-not": 1, "when-some": 1, "when-let": 1, "when-first": 1,
+	\   "case": 1, "cond": 0, "cond->": 1, "cond->>": 1, "condp": 2,
+	\   "while": 1, "loop": 1, "for": 1, "doseq": 1, "dotimes": 1,
+	\   "do": 0, "doto": 1, "comment": 0, "as->": 2,
+	\   "delay": 0, "future": 0, "locking": 1,
+	\   "fdef": 1,
+	\   "extend": 1,
+	\   "try": 0, "catch": 2, "finally": 0,
+	\   "let": 1, "binding": 1,
+	\   "defmethod": 1,
+	\   "this-as": 1,
+	\   "deftest": 1, "testing": 1, "use-fixtures": 1, "are": 2,
+	\   "alt!": 0, "alt!!": 0, "go": 0, "go-loop": 1, "thread": 0,
+	\   "run": 1, "run*": 1, "fresh": 1
+	\ }
+
+"   (letfn '(1 ((:defn)) nil))
+"   (proxy '(2 nil nil (:defn)))
+"   (reify '(:defn (1)))
+"   (deftype '(2 nil nil (:defn)))
+"   (defrecord '(2 nil nil (:defn)))
+"   (defprotocol '(1 (:defn)))
+"   (definterface '(1 (:defn)))
+"   (extend-protocol '(1 :defn))
+"   (extend-type '(1 :defn))
+"   (specify '(1 :defn))  ; ClojureScript
+"   (specify! '(1 :defn))  ; ClojureScript
+"   (this-as 1) ; ClojureScript
+"   clojure.test, core.async, core.logic
+endif
+
 " Get the value of a configuration option.
 function! s:Conf(opt, default)
 	return get(b:, a:opt, get(g:, a:opt, a:default))
@@ -165,23 +210,49 @@ function! s:StringIndent(delim_pos)
 endfunction
 
 function! s:ListIndent(delim_pos)
-	" TODO: attempt to extend "s:InsideForm" to provide information about
-	" the subforms being formatted to avoid second parsing step.
+	" TODO: extend "s:InsideForm" to provide information about the
+	" subforms being formatted to avoid second parsing step.
 
 	call cursor(a:delim_pos)
 	let ln = getline(a:delim_pos[0])
 	let base_indent = a:delim_pos[1]
 
-	" 1. TODO: Macro/rule indentation
-	"    if starts with a symbol or keyword: extract it.
-	"      - Look up in rules table.
-	"        - See number for forms forward to lookup.
-	"        - Start parsing forwards "x" forms.  (Skip metadata)
-	"        - Apply indentation.
+	" 1. Macro/rule indentation
+	"    if starts with a symbol, extract it.
+	"      - Split namespace off symbol and #'/' syntax.
+	"      - Check against pattern rules and apply indent on match.
+	"      - TODO: Look up in rules table and apply indent on match.
 	"    else, not found, go to 2.
-	" TODO: complex indentation (e.g. letfn)
-	" TODO: namespaces.
-	" let syms = split(ln[base_indent:], '[[:space:],;()\[\]{}@\\"^~`]', 1)
+	"
+	" TODO: handle complex indentation (e.g. letfn) and introduce
+	" indentation config similar to Emacs' clojure-mode and cljfmt.
+	" This new config option `clojure_indent_rules` should replace most
+	" other indentation options.
+	"
+	" TODO: replace `clojure_fuzzy_indent_patterns` with `clojure_indent_patterns`
+	let syms = split(ln[base_indent:], '[[:space:],;()\[\]{}@\\"^~`]', 1)
+	if !empty(syms)
+		let sym = syms[0]
+		" TODO: strip #' and ' from front of symbol.
+		if sym =~# '\v^%([a-zA-Z!$&*_+=|<>?-]|[^\x00-\x7F])'
+
+			" TODO: handle namespaced and non-namespaced variants.
+			if sym =~# './.'
+				let [_namespace, name] = split(sym, '/')
+			endif
+
+			for pat in s:Conf('clojure_fuzzy_indent_patterns', [])
+				if sym =~# pat
+					return base_indent + 1
+				endif
+			endfor
+
+			let rules = s:Conf('clojure_indent_rules', {})
+			let sym_match = get(rules, sym, -1)
+			" TODO: handle 2+ differently?
+			if sym_match >= 0 | return base_indent + 1 | endif
+		endif
+	endif
 
 	" 2. Function indentation
 	"    if first operand is on the same line?  (Treat metadata as args.)
