@@ -92,24 +92,18 @@ function! s:TokeniseLine(line_num)
 	while 1
 		" We perform searches within the buffer (and move the cusor)
 		" for better performance than looping char by char in a line.
-		let token = searchpos('[()[\]{};"]', 'bW', a:line_num)
+		let token_pos = searchpos('[()[\]{};"]', 'bW', a:line_num)
 
 		" No more matches, exit loop.
-		if token == [0, 0] | break | endif
+		if token_pos == [0, 0] | break | endif
 
-		let t_idx = token[1] - 1
+		let t_idx = token_pos[1] - 1
 
 		" Escaped character, ignore.
 		if s:IsEscaped(ln, t_idx) | continue | endif
 
-		let t_char = ln[t_idx]
-		if t_char ==# ';'
-			" Comment found, reset the token list for this line.
-			let tokens = []
-		elseif t_char =~# '[()\[\]{}"]'
-			" Add token to the list.
-			call add(tokens, [t_char, token])
-		endif
+		" Add token to the list.
+		call add(tokens, [ln[t_idx], token_pos])
 	endwhile
 
 	return tokens
@@ -151,6 +145,9 @@ function! s:InsideForm(lnum)
 				endif
 			elseif in_string
 				" In string: ignore other tokens.
+			elseif tk[0] ==# ';'
+				" Comment: break loop.
+				break
 			elseif ! empty(tokens) && get(s:pairs, tk[0], '') ==# tokens[-1][0]
 				" Matching pair: drop the last item in tokens.
 				call remove(tokens, -1)
