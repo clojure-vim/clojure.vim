@@ -28,6 +28,9 @@
 1
                 2)
 
+ ((constantly +) 1
+                          2)
+
           (filter
       #(= 0 (mod %
     2))
@@ -45,6 +48,9 @@ a))
 (#(foo bar)
 a)
 
+(#(foo bar) a
+   b)
+
 #_(:foo
         {:foo 1})
 
@@ -56,3 +62,24 @@ a)
 
                   (#_(foo bar)
           a)
+
+(@foo bar
+           biz)
+
+(@foo
+bar
+           biz)
+
+(#'foo bar
+           biz)
+
+(#'foo
+bar
+           biz)
+
+('foo bar
+              biz)
+
+('foo
+bar
+       biz)

@@ -9,3 +9,7 @@
         (let [Δt '[if foo
            bar
       baz]])
+
+        (let [Δt (assoc foo
+           :bar
+      123)])
