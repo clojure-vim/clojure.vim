@@ -181,13 +181,9 @@ endfunction
 
 " Returns "1" when the "=" operator is currently active.
 function! s:EqualsOperatorInEffect()
-	if has('nvim')
-		" Neovim has no `state()` function so fallback to indenting
-		" strings.
-		return 0
-	else
-		return v:operator ==# '=' && state('o') ==# 'o'
-	endif
+	return exists('*state')
+		\ ? v:operator ==# '=' && state('o') ==# 'o'
+		\ : 0
 endfunction
 
 function! s:StringIndent(delim_pos)
