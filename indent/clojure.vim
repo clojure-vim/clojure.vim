@@ -26,7 +26,7 @@ setlocal indentkeys=!,o,O
 
 if !exists('g:clojure_fuzzy_indent_patterns')
 	let g:clojure_fuzzy_indent_patterns = [
-	\   '^with-\%(meta\|out-str\|loading-context\)\@!',
+	\   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
 	\   '^def',
 	\   '^let'
 	\ ]
@@ -54,19 +54,19 @@ if !exists('g:clojure_indent_rules')
 	\   'run': 1, 'run*': 1, 'fresh': 1
 	\ }
 
-"   (letfn '(1 ((:defn)) nil))
-"   (proxy '(2 nil nil (:defn)))
-"   (reify '(:defn (1)))
-"   (deftype '(2 nil nil (:defn)))
-"   (defrecord '(2 nil nil (:defn)))
-"   (defprotocol '(1 (:defn)))
-"   (definterface '(1 (:defn)))
-"   (extend-protocol '(1 :defn))
-"   (extend-type '(1 :defn))
-"   (specify '(1 :defn))  ; ClojureScript
-"   (specify! '(1 :defn))  ; ClojureScript
-"   (this-as 1) ; ClojureScript
-"   clojure.test, core.async, core.logic
+	" (letfn '(1 ((:defn)) nil))
+	" (proxy '(2 nil nil (:defn)))
+	" (reify '(:defn (1)))
+	" (deftype '(2 nil nil (:defn)))
+	" (defrecord '(2 nil nil (:defn)))
+	" (defprotocol '(1 (:defn)))
+	" (definterface '(1 (:defn)))
+	" (extend-protocol '(1 :defn))
+	" (extend-type '(1 :defn))
+	" (specify '(1 :defn))  ; ClojureScript
+	" (specify! '(1 :defn))  ; ClojureScript
+	" (this-as 1) ; ClojureScript
+	" clojure.test, core.async, core.logic
 endif
 
 " Get the value of a configuration option.
