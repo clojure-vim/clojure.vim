@@ -93,6 +93,7 @@ endfunction
 function! s:TokeniseLine(line_num)
 	let tokens = []
 	let ln = getline(a:line_num)
+	let possible_comment = 0
 
 	while 1
 		" We perform searches within the buffer (and move the cusor)
@@ -108,10 +109,16 @@ function! s:TokeniseLine(line_num)
 		if s:IsEscaped(ln, t_idx) | continue | endif
 
 		" Add token to the list.
-		call add(tokens, [ln[t_idx], token_pos])
+		let token = ln[t_idx]
+		call add(tokens, [token, token_pos])
+
+		" Early "possible comment" detection to reduce copying later.
+		if token ==# ';' | let possible_comment = 1 | endif
 	endwhile
 
-	return tokens
+	" echom 'Tokens: ' string(tokens)
+
+	return [tokens, possible_comment]
 endfunction
 
 let s:pairs = {'(': ')', '[': ']', '{': '}'}
@@ -131,8 +138,15 @@ function! s:InsideForm(lnum)
 
 	let lnum = a:lnum - 1
 	while lnum > 0
+		let [line_tokens, possible_comment] = s:TokeniseLine(lnum)
+
+		" In case of comments, copy "tokens" so we can undo alterations.
+		if possible_comment
+			let prev_tokens = copy(tokens)
+		endif
+
 		" Reduce tokens from line "lnum" into "tokens".
-		for tk in s:TokeniseLine(lnum)
+		for tk in line_tokens
 			if tk[0] ==# '"'
 				if in_string
 					let in_string = 0
@@ -150,9 +164,10 @@ function! s:InsideForm(lnum)
 				endif
 			elseif in_string
 				" In string: ignore other tokens.
-			elseif tk[0] ==# ';'
-				" Comment: break loop.
-				break
+			elseif possible_comment && tk[0] ==# ';'
+				" Comment: undo previous token applications on
+				" this line.
+				let tokens = copy(prev_tokens)
 			elseif ! empty(tokens) && get(s:pairs, tk[0], '') ==# tokens[-1][0]
 				" Matching pair: drop the last item in tokens.
 				call remove(tokens, -1)
