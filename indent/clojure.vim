@@ -81,6 +81,14 @@ function! s:IsEscaped(line_str, i_char)
 	return (strlen(ln) - strlen(trim(ln, '\', 2))) % 2
 endfunction
 
+" TODO: better comment and function name.
+" Used to check if in the current form for list function indentation.
+let s:in_form_current_form = [0, 0]
+function! s:InForm()
+	let pos = searchpairpos('[([{"]', '', '[)\]}"]', 'b')
+	return pos != [0, 0] && pos != s:in_form_current_form
+endfunction
+
 function! s:PosToCharPos(pos)
 	call cursor(a:pos)
 	return getcursorcharpos()[1:2]
@@ -115,8 +123,6 @@ function! s:TokeniseLine(line_num)
 		" Early "possible comment" detection to reduce copying later.
 		if token ==# ';' | let possible_comment = 1 | endif
 	endwhile
-
-	" echom 'Tokens: ' string(tokens)
 
 	return [tokens, possible_comment]
 endfunction
@@ -185,6 +191,7 @@ function! s:InsideForm(lnum)
 		let lnum -= 1
 	endwhile
 
+	" TODO: can this conditional be simplified?
 	if (in_string && first_string_pos != []) || (! empty(tokens) && tokens[0][0] ==# '"')
 		" Must have been in a multi-line string or regular expression
 		" as the string was never closed.
@@ -236,17 +243,18 @@ function! s:ListIndent(delim_pos)
 	"      - Check against pattern rules and apply indent on match.
 	"      - Look up in rules table and apply indent on match.
 	"    else, not found, go to 2.
-	"
+
 	" TODO: handle complex indentation (e.g. letfn) and introduce
 	" indentation config similar to Emacs' clojure-mode and cljfmt.
 	" This new config option `clojure_indent_rules` should replace most
 	" other indentation options.
-	"
-	" TODO: replace `clojure_fuzzy_indent_patterns` with `clojure_indent_patterns`
+
+	" TODO: simplify this.
 	let syms = split(ln[delim_col:], '[[:space:],;()\[\]{}@\\"^~`]', 1)
+
 	if !empty(syms)
 		let sym = syms[0]
-		" TODO: strip #' and ' from front of symbol.
+		" TODO: if prefixed with "#'" or "'" fallback to func indent.
 		if sym =~# '\v^%([a-zA-Z!$&*_+=|<>?-]|[^\x00-\x7F])'
 
 			" TODO: handle namespaced and non-namespaced variants.
@@ -254,6 +262,7 @@ function! s:ListIndent(delim_pos)
 				let [_namespace, name] = split(sym, '/')
 			endif
 
+			" TODO: replace `clojure_fuzzy_indent_patterns` with `clojure_indent_patterns`
 			for pat in s:Conf('clojure_fuzzy_indent_patterns', [])
 				if sym =~# pat
 					return base_indent + 1
@@ -272,24 +281,18 @@ function! s:ListIndent(delim_pos)
 	"      - Indent subsequent lines to align with first operand.
 	"    else
 	"      - Indent 1 or 2 spaces.
+
 	let indent_style = s:Conf('clojure_indent_style', 'always-align')
 	if indent_style !=# 'always-indent'
-		let init_col = delim_col + 1
-		call cursor(a:delim_pos[0], init_col)
+		let lnr = a:delim_pos[0]
+		call cursor(lnr, delim_col + 1)
 
-		" TODO: replace cursor translation with searching?
-		let ch = ln[delim_col]
-		if ch ==# '(' || ch ==# '[' || ch ==# '{'
-			normal! %w
-		elseif ch !=# ';' && ch !=# '"'
-			normal! w
-		endif
+		" TODO: ignore comments.
+		" TODO: handle escaped characters!
+		let s:in_form_current_form = a:delim_pos
+		let ln_s = searchpos('[ ,]\+\zs', 'z', lnr, 0, function('<SID>InForm'))
 
-		let cur_pos = getcursorcharpos()[1:2]
-		if a:delim_pos[0] == cur_pos[0] && init_col != cur_pos[1]
-			" Align operands.
-			return cur_pos[1] - 1
-		endif
+		if ln_s != [0, 0] | return s:PosToCharPos(ln_s)[1] - 1 | endif
 	endif
 
 	" Fallback indentation for operands.  When "clojure_indent_style" is
