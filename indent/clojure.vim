@@ -248,6 +248,8 @@ function! s:ListIndent(delim_pos)
 	let base_indent = s:PosToCharPos(a:delim_pos)[1]
 	let ln = getline(a:delim_pos[0])
 
+	let sym_match = -1
+
 	" 1. Macro/rule indentation
 	"    if starts with a symbol, extract it.
 	"      - Split namespace off symbol and #'/' syntax.
@@ -265,7 +267,6 @@ function! s:ListIndent(delim_pos)
 
 	if !empty(syms)
 		let sym = syms[0]
-		" TODO: if prefixed with "#'" or "'" fallback to func indent.
 		if sym =~# '\v^%([a-zA-Z!$&*_+=|<>?-]|[^\x00-\x7F])'
 
 			" TODO: handle namespaced and non-namespaced variants.
@@ -281,7 +282,7 @@ function! s:ListIndent(delim_pos)
 			let rules = s:Conf('clojure_indent_rules', {})
 			let sym_match = get(rules, sym, -1)
 			" TODO: handle 2+ differently?
-			if sym_match >= 0 | return base_indent + 1 | endif
+			if sym_match > 0 | return base_indent + 1 | endif
 		endif
 	endif
 
@@ -298,7 +299,9 @@ function! s:ListIndent(delim_pos)
 
 	" Fallback indentation for operands.  When "clojure_indent_style" is
 	" "always-align", use 1 space indentation, else 2 space indentation.
-	return base_indent + (indent_style !=# 'always-align')
+	" The "sym_match" check handles the case when "clojure_indent_rules"
+	" specified a value of "0".
+	return base_indent + (indent_style !=# 'always-align' || sym_match == 0)
 endfunction
 
 function! s:ClojureIndent()
