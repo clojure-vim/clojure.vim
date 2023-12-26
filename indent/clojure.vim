@@ -313,7 +313,11 @@ function! s:ClojureIndent()
 	endif
 endfunction
 
-" TODO: setl lisp lispoptions=expr:1 if exists.  "has('patch-9.0.0761')"
+" Connect indentation function.
+if exists('&lispoptions')
+	setlocal lisp lispoptions=expr:1
+	let b:undo_indent .= ' lispoptions<'
+endif
 setlocal indentexpr=s:ClojureIndent()
 
 let &cpoptions = s:save_cpo
