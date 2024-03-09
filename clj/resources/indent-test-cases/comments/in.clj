@@ -9,3 +9,9 @@
 {:foo {:bar 1}     ; Default.
 ;; Foo bar! {
 :biz {:as 123, :asdf #{1 2 3}}}
+
+(comment
+{:foo {:bar 1}     ; Default.
+ ;; Foo bar! {
+ :biz {:as 123, :asdf #{1 2 3}}}
+)
