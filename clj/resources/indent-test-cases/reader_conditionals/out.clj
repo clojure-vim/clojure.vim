@@ -8,4 +8,4 @@
        (goog.date.UtcDateTime. (.getYear x) (.getMonth x) (.getDate x)))))
 
 #?@(:clj  [5 6 7 8]
-    :cljs [1 2 3 4])))
+    :cljs [1 2 3 4])

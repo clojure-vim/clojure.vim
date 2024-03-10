@@ -7,92 +7,44 @@ Clojure runtime files for Vim.
 
 CLOJURE					*ft-clojure-indent* *clojure-indent*
 
-Clojure indentation differs somewhat from traditional Lisps, due in part to
-the use of square and curly brackets, and otherwise by community convention.
-These conventions are not universally followed, so the Clojure indent script
-offers a few configuration options.
+By default Clojure.vim will attempt to follow the indentation rules in the
+Clojure Style Guide, [1] but various configuration options are provided to
+alter the indentation as you prefer.
 
-(If the current Vim does not include |searchpairpos()|, the indent script falls
-back to normal 'lisp' indenting, and the following options are ignored.)
+[1]: https://guide.clojure.style
 
+WARNING: if your installation of Vim does not include `searchpairpos()`, the
+indent script falls back to normal 'lisp' and 'lispwords' indenting,
+ignoring the following indentation options.
 
-							*g:clojure_maxlines*
+						*b:clojure_indent_rules*
+						*g:clojure_indent_rules*
 
-Sets maximum scan distance of `searchpairpos()`.  Larger values trade
-performance for correctness when dealing with very long forms.  A value of
-0 will scan without limits.  The default is 300.
+TODO: add this option and write this section.
 
-
-						*g:clojure_fuzzy_indent*
-					*g:clojure_fuzzy_indent_patterns*
-					*g:clojure_fuzzy_indent_blacklist*
-
-The 'lispwords' option is a list of comma-separated words that mark special
-forms whose subforms should be indented with two spaces.
-
-For example:
->
-	(defn bad []
-	      "Incorrect indentation")
-
-	(defn good []
-	  "Correct indentation")
-<
-If you would like to specify 'lispwords' with a |pattern| instead, you can use
-the fuzzy indent feature:
->
-	" Default
-	let g:clojure_fuzzy_indent = 1
-	let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
-	let g:clojure_fuzzy_indent_blacklist =
-		\ ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
-<
-|g:clojure_fuzzy_indent_patterns| and |g:clojure_fuzzy_indent_blacklist| are
-lists of patterns that will be matched against the unqualified symbol at the
-head of a list.  This means that a pattern like `"^foo"` will match all these
-candidates: `foobar`, `my.ns/foobar`, and `#'foobar`.
-
-Each candidate word is tested for special treatment in this order:
-
-	1. Return true if word is literally in 'lispwords'
-	2. Return false if word matches a pattern in
-	   |g:clojure_fuzzy_indent_blacklist|
-	3. Return true if word matches a pattern in
-	   |g:clojure_fuzzy_indent_patterns|
-	4. Return false and indent normally otherwise
-
-
-					*g:clojure_special_indent_words*
-
-Some forms in Clojure are indented such that every subform is indented by only
-two spaces, regardless of 'lispwords'.  If you have a custom construct that
-should be indented in this idiosyncratic fashion, you can add your symbols to
-the default list below.
->
-	" Default
-	let g:clojure_special_indent_words =
-	   \ 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
-<
-
+					*b:clojure_align_multiline_strings*
 					*g:clojure_align_multiline_strings*
 
-Align subsequent lines in multi-line strings to the column after the opening
-quote, instead of the same column.
-
-For example:
+Alter alignment of newly created lines within multi-line strings (and regular
+expressions).
 >
+	;; let g:clojure_align_multiline_strings = 0  " Default
 	(def default
 	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-	  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-	  enim ad minim veniam, quis nostrud exercitation ullamco laboris
-	  nisi ut aliquip ex ea commodo consequat.")
+	  eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 
+	;; let g:clojure_align_multiline_strings = 1
 	(def aligned
 	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-	   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-	   enim ad minim veniam, quis nostrud exercitation ullamco laboris
-	   nisi ut aliquip ex ea commodo consequat.")
+	   eiusmod tempor incididunt ut labore et dolore magna aliqua.")
+
+	;; let g:clojure_align_multiline_strings = -1
+	(def traditional
+	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 <
+NOTE: indenting the string with |=| will not alter the indentation of existing
+multi-line strings as that would break intentional formatting.
 
 						*g:clojure_align_subforms*
 
@@ -112,14 +64,6 @@ clojure-mode.el:
 	 bar
 	 baz)
 <
-
-						  *g:clojure_cljfmt_compat*
-
-Try to be (more) compatible with `cljfmt` Clojure code formatting tool. Turns
-on single space indenting for forms starting with `:keywords`, `'symbols`,
-`#'variables` and `@dereferences` (it affects, for instance, `(:require ...)`
-clause in Clojure `ns` form).
-
 
 CLOJURE							*ft-clojure-syntax*
 

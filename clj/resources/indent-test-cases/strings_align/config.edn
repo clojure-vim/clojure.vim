@@ -1,0 +1,4 @@
+{:extra-cmds ["let g:clojure_align_multiline_strings = 1"
+              "normal! G"
+              "normal! o\u000atest \"hello\u000aworld\""
+              "normal! o\u000aregex #\"asdf\u000abar\""]}
