@@ -7,9 +7,7 @@
 " License:             Vim (see :h license)
 " Repository:          https://github.com/clojure-vim/clojure.vim
 
-if exists("b:did_indent")
-	finish
-endif
+if exists("b:did_indent") | finish | endif
 let b:did_indent = 1
 
 let s:save_cpo = &cpoptions
@@ -99,11 +97,11 @@ function! s:IsSubForm()
 	return pos != [0, 0] && pos != s:in_form_current_form
 endfunction
 
-" Converts a cursor position into a characterwise cursor position (to handle
-" multibyte characters).
-function! s:PosToCharPos(pos)
+" Converts a cursor position into a characterwise cursor column position (to
+" handle multibyte characters).
+function! s:PosToCharCol(pos)
 	call cursor(a:pos)
-	return getcursorcharpos()[1:2]
+	return getcursorcharpos()[2]
 endfunction
 
 " Repeatedly search for indentation significant Clojure tokens on a given line
@@ -230,11 +228,11 @@ function! s:StringIndent(delim_pos)
 		"  0: Indent in alignment with end of the string start delimiter.
 		"  1: Indent in alignment with string start delimiter.
 		if     alignment == -1 | return 0
-		elseif alignment ==  1 | return s:PosToCharPos(a:delim_pos)[1]
+		elseif alignment ==  1 | return s:PosToCharCol(a:delim_pos)
 		else
 			let col = a:delim_pos[1]
 			let is_regex = col > 1 && getline(a:delim_pos[0])[col - 2] ==# '#'
-			return s:PosToCharPos(a:delim_pos)[1] - (is_regex ? 2 : 1)
+			return s:PosToCharCol(a:delim_pos) - (is_regex ? 2 : 1)
 		endif
 	else
 		return -1  " Keep existing indent.
@@ -245,7 +243,7 @@ function! s:ListIndent(delim_pos)
 	" TODO: extend "s:InsideForm" to provide information about the
 	" subforms being formatted to avoid second parsing step.
 
-	let base_indent = s:PosToCharPos(a:delim_pos)[1]
+	let base_indent = s:PosToCharCol(a:delim_pos)
 	let ln = getline(a:delim_pos[0])
 
 	let sym_match = -1
@@ -294,7 +292,7 @@ function! s:ListIndent(delim_pos)
 	let indent_style = s:Conf('clojure_indent_style', 'always-align')
 	if indent_style !=# 'always-indent'
 		let pos = s:FirstFnArgPos(a:delim_pos)
-		if pos != [0, 0] | return s:PosToCharPos(pos)[1] - 1 | endif
+		if pos != [0, 0] | return s:PosToCharCol(pos) - 1 | endif
 	endif
 
 	" Fallback indentation for operands.  When "clojure_indent_style" is
@@ -309,8 +307,8 @@ function! s:ClojureIndent()
 	let [form, pos] = s:InsideForm(v:lnum)
 	if     form ==# '^' | return 0  " At top-level, no indent.
 	elseif form ==# '(' | return s:ListIndent(pos)
-	elseif form ==# '[' | return s:PosToCharPos(pos)[1]
-	elseif form ==# '{' | return s:PosToCharPos(pos)[1]
+	elseif form ==# '[' | return s:PosToCharCol(pos)
+	elseif form ==# '{' | return s:PosToCharCol(pos)
 	elseif form ==# '"' | return s:StringIndent(pos)
 	else                | return -1  " Keep existing indent.
 	endif
