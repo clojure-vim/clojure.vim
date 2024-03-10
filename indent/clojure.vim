@@ -7,6 +7,9 @@
 " License:             Vim (see :h license)
 " Repository:          https://github.com/clojure-vim/clojure.vim
 
+" NOTE: To debug this code, make sure to "set debug+=msg" otherwise errors
+" will occur silently.
+
 if exists("b:did_indent") | finish | endif
 let b:did_indent = 1
 
@@ -19,9 +22,6 @@ setlocal noautoindent nosmartindent nolisp
 setlocal softtabstop=2 shiftwidth=2 expandtab
 setlocal indentkeys=!,o,O
 
-" NOTE: To debug this code, make sure to "set debug+=msg" otherwise errors
-" will occur silently.
-
 if !exists('g:clojure_fuzzy_indent_patterns')
 	let g:clojure_fuzzy_indent_patterns = [
 	\   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
@@ -30,41 +30,48 @@ if !exists('g:clojure_fuzzy_indent_patterns')
 	\ ]
 endif
 
+" TODO: are all these options needed or relevant?  Use "lispwords" instead?
+" Defaults copied from: https://github.com/clojure-emacs/clojure-mode/blob/0e62583b5198f71856e4d7b80e1099789d47f2ed/clojure-mode.el#L1800-L1875
 if !exists('g:clojure_indent_rules')
-	" Defaults copied from: https://github.com/clojure-emacs/clojure-mode/blob/0e62583b5198f71856e4d7b80e1099789d47f2ed/clojure-mode.el#L1800-L1875
 	let g:clojure_indent_rules = {
 	\   'ns': 1,
-	\   'fn': 1, 'def': 1, 'defn': 1, 'bound-fn': 1,
+	\   'fn': 1, 'def': 1, 'defn': 1, 'bound-fn': 1, 'fdef': 1,
+	\   'let': 1, 'binding': 1, 'defmethod': 1,
 	\   'if': 1, 'if-not': 1, 'if-some': 1, 'if-let': 1,
 	\   'when': 1, 'when-not': 1, 'when-some': 1, 'when-let': 1, 'when-first': 1,
 	\   'case': 1, 'cond': 0, 'cond->': 1, 'cond->>': 1, 'condp': 2,
 	\   'while': 1, 'loop': 1, 'for': 1, 'doseq': 1, 'dotimes': 1,
 	\   'do': 0, 'doto': 1, 'comment': 0, 'as->': 2,
 	\   'delay': 0, 'future': 0, 'locking': 1,
-	\   'fdef': 1,
-	\   'extend': 1,
 	\   'try': 0, 'catch': 2, 'finally': 0,
-	\   'let': 1, 'binding': 1,
-	\   'defmethod': 1,
-	\   'this-as': 1,
-	\   'deftest': 1, 'testing': 1, 'use-fixtures': 1, 'are': 2,
-	\   'alt!': 0, 'alt!!': 0, 'go': 0, 'go-loop': 1, 'thread': 0,
-	\   'run': 1, 'run*': 1, 'fresh': 1
+        \   'reify': 1, 'proxy': 2, 'defrecord': 2, 'defprotocol': 1, 'definterface': 1,
+	\   'extend': 1, 'extend-protocol': 1, 'extend-type': 1
 	\ }
+	" (letfn) (1 ((:defn)) nil)
+	" (reify) (:defn (1))
+	" (deftype defrecord proxy) (2 nil nil (:defn))
+	" (defprotocol definterface extend-protocol extend-type) (1 (:defn))
 
-	" (letfn '(1 ((:defn)) nil))
-	" (proxy '(2 nil nil (:defn)))
-	" (reify '(:defn (1)))
-	" (deftype '(2 nil nil (:defn)))
-	" (defrecord '(2 nil nil (:defn)))
-	" (defprotocol '(1 (:defn)))
-	" (definterface '(1 (:defn)))
-	" (extend-protocol '(1 :defn))
-	" (extend-type '(1 :defn))
-	" (specify '(1 :defn))  ; ClojureScript
-	" (specify! '(1 :defn))  ; ClojureScript
-	" (this-as 1) ; ClojureScript
-	" clojure.test, core.async, core.logic
+	" ClojureScript
+	call extend(g:clojure_indent_rules, {
+	\   'this-as': 1, 'specify': 1, 'specify!': 1
+	\ })
+	" (specify specify!) (1 :defn)
+
+	" clojure.test
+	call extend(g:clojure_indent_rules, {
+	\   'deftest': 1, 'testing': 1, 'use-fixtures': 1, 'are': 2
+	\ })
+
+	" core.async
+	call extend(g:clojure_indent_rules, {
+	\   'alt!': 0, 'alt!!': 0, 'go': 0, 'go-loop': 1, 'thread': 0
+	\ })
+
+	" core.logic
+	call extend(g:clojure_indent_rules, {
+	\   'run': 1, 'run*': 1, 'fresh': 1
+	\ })
 endif
 
 " Get the value of a configuration option.
