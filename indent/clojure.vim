@@ -78,7 +78,7 @@ endfunction
 " of backslash characters (i.e. escaped).
 function! s:IsEscaped(line_str, i_char)
 	let ln = a:line_str[: a:i_char - 1]
-	return (strlen(ln) - strlen(trim(ln, '\', 2))) % 2
+	return ! strlen(trim(ln, '\', 2)) % 2
 endfunction
 
 " Used during list function indentation.  Returns the position of the first
