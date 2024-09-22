@@ -252,6 +252,7 @@ function! s:ListIndent(delim_pos)
 
 	let base_indent = s:PosToCharCol(a:delim_pos)
 	let ln = getline(a:delim_pos[0])
+	let ln_content = ln[a:delim_pos[1]:]
 
 	let sym_match = -1
 
@@ -268,7 +269,7 @@ function! s:ListIndent(delim_pos)
 	" other indentation options.
 
 	" TODO: simplify this.
-	let syms = split(ln[a:delim_pos[1]:], '[[:space:],;()\[\]{}@\\"^~`]', 1)
+	let syms = split(ln_content, '[[:space:],;()\[\]{}@\\"^~`]', 1)
 
 	if !empty(syms)
 		let sym = syms[0]
@@ -292,12 +293,12 @@ function! s:ListIndent(delim_pos)
 	endif
 
 	" 2. Function indentation
-	"    if first operand is on the same line?
+	"    if first operand is on the same line? (and not a keyword)
 	"      - Indent subsequent lines to align with first operand.
 	"    else
 	"      - Indent 1 or 2 spaces.
 	let indent_style = s:Conf('clojure_indent_style', 'always-align')
-	if indent_style !=# 'always-indent'
+	if indent_style !=# 'always-indent' && ln_content[0] !=# ':'
 		let pos = s:FirstFnArgPos(a:delim_pos)
 		if pos != [0, 0] | return s:PosToCharCol(pos) - 1 | endif
 	endif
