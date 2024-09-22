@@ -6,4 +6,4 @@
                  :comments ":help license"}
   :dependencies [[org.clojure/clojure "1.12.0"]
                  [org.clojure/data.csv "1.1.0"]
-                 [frak "0.1.9"]])
+                 [frak "0.1.9" :exclusions [org.clojure/clojurescript]]])
