@@ -1,1 +1,0 @@
-{:extra-cmds ["let g:clojure_indent_style = 'align-arguments'"]}

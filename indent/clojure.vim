@@ -22,15 +22,36 @@ setlocal noautoindent nosmartindent nolisp
 setlocal softtabstop=2 shiftwidth=2 expandtab
 setlocal indentkeys=!,o,O
 
-if !exists('g:clojure_fuzzy_indent_patterns')
-	let g:clojure_fuzzy_indent_patterns = [
-	\   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
-	\   '^def',
-	\   '^let'
-	\ ]
-endif
+" Set a new configuration option with a default value.  Assigns a script-local
+" version too, which is the default fallback in case the global was "unlet".
+function! s:SConf(name, default) abort
+	exec 'let' 's:' . a:name '=' string(a:default)
+	let n = 'g:' . a:name
+	if ! exists(n) | exec 'let' n '=' string(a:default) | endif
+endfunction
 
-" TODO: are all these options needed or relevant?  Use "lispwords" instead?
+" Get the value of a configuration option with a possible fallback.  If no
+" fallback is given, uses the original config option value.
+function! s:Conf(opt, fallback = v:null) abort
+	return a:fallback ==# v:null
+		\ ? get(b:, a:opt, get(g:, a:opt, get(s:, a:opt)))
+		\ : get(b:, a:opt, get(g:, a:opt, a:fallback))
+endfunction
+
+" Available options:
+"   - standard    (Emacs equiv: always-align)
+"   - traditional (Emacs equiv: align-arguments)
+"   - uniform     (Emacs equiv: always-indent)
+call s:SConf('clojure_indent_style', 'standard')
+
+call s:SConf('clojure_align_multiline_strings', 0)
+
+call s:SConf('clojure_fuzzy_indent_patterns', [
+\   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
+\   '^def',
+\   '^let'
+\ ])
+
 " Defaults copied from: https://github.com/clojure-emacs/clojure-mode/blob/0e62583b5198f71856e4d7b80e1099789d47f2ed/clojure-mode.el#L1800-L1875
 if !exists('g:clojure_indent_rules')
 	let g:clojure_indent_rules = {
@@ -73,11 +94,6 @@ if !exists('g:clojure_indent_rules')
 	\   'run': 1, 'run*': 1, 'fresh': 1
 	\ })
 endif
-
-" Get the value of a configuration option.
-function! s:Conf(opt, default)
-	return get(b:, a:opt, get(g:, a:opt, a:default))
-endfunction
 
 " Returns "1" if position "i_char" in "line_str" is preceded by an odd number
 " of backslash characters (i.e. escaped).
@@ -230,7 +246,7 @@ function! s:StringIndent(delim_pos)
 	let m = mode()
 	if m ==# 'i' || (m ==# 'n' && ! s:EqualsOperatorInEffect())
 		" If in insert mode, or normal mode but "=" is not in effect.
-		let alignment = s:Conf('clojure_align_multiline_strings', 0)
+		let alignment = s:Conf('clojure_align_multiline_strings')
 		" -1: Indent along left edge, like traditional Lisps.
 		"  0: Indent in alignment with end of the string start delimiter.
 		"  1: Indent in alignment with string start delimiter.
@@ -297,17 +313,17 @@ function! s:ListIndent(delim_pos)
 	"      - Indent subsequent lines to align with first operand.
 	"    else
 	"      - Indent 1 or 2 spaces.
-	let indent_style = s:Conf('clojure_indent_style', 'always-align')
-	if indent_style !=# 'always-indent' && ln_content[0] !=# ':'
+	let indent_style = s:Conf('clojure_indent_style')
+	if indent_style !=# 'uniform' && ln_content[0] !=# ':'
 		let pos = s:FirstFnArgPos(a:delim_pos)
 		if pos != [0, 0] | return s:PosToCharCol(pos) - 1 | endif
 	endif
 
 	" Fallback indentation for operands.  When "clojure_indent_style" is
-	" "always-align", use 1 space indentation, else 2 space indentation.
+	" "standard", use 1 space indentation, else 2 space indentation.
 	" The "sym_match" check handles the case when "clojure_indent_rules"
 	" specified a value of "0".
-	return base_indent + (indent_style !=# 'always-align' || sym_match == 0)
+	return base_indent + (indent_style !=# 'standard' || sym_match == 0)
 endfunction
 
 function! s:ClojureIndent()
