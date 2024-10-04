@@ -25,17 +25,15 @@ setlocal indentkeys=!,o,O
 " Set a new configuration option with a default value.  Assigns a script-local
 " version too, which is the default fallback in case the global was "unlet".
 function! s:SConf(name, default) abort
-	exec 'let' 's:' . a:name '=' string(a:default)
+	let s = 's:' . a:name
 	let n = 'g:' . a:name
-	if ! exists(n) | exec 'let' n '=' string(a:default) | endif
+	exec 'let' 's:' . a:name '=' string(a:default)
+	if ! exists(n) | exec 'let' n '=' s | endif
 endfunction
 
-" Get the value of a configuration option with a possible fallback.  If no
-" fallback is given, uses the original config option value.
-function! s:Conf(opt, fallback = v:null) abort
-	return a:fallback ==# v:null
-		\ ? get(b:, a:opt, get(g:, a:opt, get(s:, a:opt)))
-		\ : get(b:, a:opt, get(g:, a:opt, a:fallback))
+" Get the value of a configuration option with a possible fallback.
+function! s:Conf(opt, fallback) abort
+	return get(b:, a:opt, get(g:, a:opt, a:fallback))
 endfunction
 
 " Available options:
@@ -246,7 +244,7 @@ function! s:StringIndent(delim_pos)
 	let m = mode()
 	if m ==# 'i' || (m ==# 'n' && ! s:EqualsOperatorInEffect())
 		" If in insert mode, or normal mode but "=" is not in effect.
-		let alignment = s:Conf('clojure_align_multiline_strings')
+		let alignment = s:Conf('clojure_align_multiline_strings', s:clojure_align_multiline_strings)
 		" -1: Indent along left edge, like traditional Lisps.
 		"  0: Indent in alignment with end of the string start delimiter.
 		"  1: Indent in alignment with string start delimiter.
@@ -313,7 +311,7 @@ function! s:ListIndent(delim_pos)
 	"      - Indent subsequent lines to align with first operand.
 	"    else
 	"      - Indent 1 or 2 spaces.
-	let indent_style = s:Conf('clojure_indent_style')
+	let indent_style = s:Conf('clojure_indent_style', s:clojure_indent_style)
 	if indent_style !=# 'uniform' && ln_content[0] !=# ':'
 		let pos = s:FirstFnArgPos(a:delim_pos)
 		if pos != [0, 0] | return s:PosToCharCol(pos) - 1 | endif
