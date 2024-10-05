@@ -37,6 +37,8 @@ endfunction
 
 call s:SConf('clojure_indent_style', 'standard')
 call s:SConf('clojure_indent_multiline_strings', 'standard')
+
+" TODO: rename this option.
 call s:SConf('clojure_fuzzy_indent_patterns', [
 \   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
 \   '^def',

@@ -63,8 +63,8 @@ these conventions are not universally followed, the Clojure indent script
 offers ways to adjust the indentaion.
 
 > [!WARNING]
-> The indentation code has recently been rebuilt which included the removal of
-> the following configuration options:
+> The indentation code has recently been rebuilt which included the
+> removal/replacement of the following configuration options:
 >
 > - `clojure_align_multiline_strings`
 > - `clojure_fuzzy_indent`
@@ -144,7 +144,7 @@ Pull requests are welcome!  Make sure to read the
 _Vim-clojure-static_ was created by [Sung Pae](https://github.com/guns).  The
 original copies of the packaged runtime files came from
 [Meikel Brandmeyer](http://kotka.de/)'s [VimClojure][] project with permission.
-Thanks to [Tim Pope](https://github.com/tpope/) for advice in [#vim](https://www.vi-improved.org/).
+Thanks to [Tim Pope](https://github.com/tpope/) for advice in `#vim` on IRC.
 
 
 ## License
