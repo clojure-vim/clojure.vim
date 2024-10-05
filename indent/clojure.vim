@@ -22,6 +22,9 @@ setlocal noautoindent nosmartindent nolisp
 setlocal softtabstop=2 shiftwidth=2 expandtab
 setlocal indentkeys=!,o,O
 
+" FIXME: fix reader conditional tests.  Include (:require [...]) test cases.
+"   Is it possible to fix reader conditional indentation?
+
 " Set a new configuration option with a default value.  Assigns a script-local
 " version too, to be used as a default fallback if the global was "unlet".
 function! s:SConf(name, default) abort
@@ -37,18 +40,11 @@ endfunction
 
 call s:SConf('clojure_indent_style', 'standard')
 call s:SConf('clojure_indent_multiline_strings', 'standard')
-
-" TODO: rename this option.
 call s:SConf('clojure_fuzzy_indent_patterns', [
 \   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
 \   '^def',
 \   '^let'
 \ ])
-
-" FIXME: fix reader conditional tests.  Include (:require [...]) test cases.
-"   Is it possible to fix reader conditional indentation?
-
-" TODO: make the indentation function usable from other Clojure-like languages.
 
 " TODO: explain the different numbers.  The "indent_style" option can override "0"
 " - -1  Not in dictionary, follow defaults.
@@ -93,8 +89,7 @@ endfunction
 " Used during list function indentation.  Returns the position of the first
 " operand in the list on the first line of the form at "pos".
 function! s:FirstFnArgPos(pos)
-	" TODO: ignore comments.
-	" TODO: handle escaped characters!
+	" TODO: ignore comments and handle escaped characters!
 	let lnr = a:pos[0]
 	let s:in_form_current_form = a:pos
 	call cursor(lnr, a:pos[1] + 1)
@@ -234,9 +229,6 @@ function! s:StringIndent(delim_pos)
 	if m ==# 'i' || (m ==# 'n' && ! s:EqualsOperatorInEffect())
 		" If in insert mode, or normal mode but "=" is not in effect.
 		let alignment = s:Conf('clojure_indent_multiline_strings', s:clojure_indent_multiline_strings)
-		" standard:    Indent in alignment with end of the string start delimiter.
-		" traditional: Indent along left edge, like traditional Lisps.
-		" pretty:      Indent in alignment with string start delimiter.
 		if     alignment ==# 'traditional' | return 0
 		elseif alignment ==# 'pretty'      | return s:PosToCharCol(a:delim_pos)
 		else                " standard
@@ -288,7 +280,7 @@ function! s:ListIndent(delim_pos)
 				let [_namespace, name] = split(sym, '/')
 			endif
 
-			" TODO: replace `clojure_fuzzy_indent_patterns` with `clojure_indent_patterns`
+			" TODO: replace `clojure_fuzzy_indent_patterns` with `clojure_indent_patterns`?
 			for pat in s:Conf('clojure_fuzzy_indent_patterns', [])
 				if sym =~# pat | return base_indent + 1 | endif
 			endfor
@@ -315,6 +307,7 @@ function! s:ListIndent(delim_pos)
 	return base_indent + (indent_style ==# 'traditional' || sym_match == 0)
 endfunction
 
+" TODO: make this usable from other Clojure-like languages.
 function! s:ClojureIndent()
 	" Calculate and return indent to use based on the matching form.
 	let [form, pos] = s:InsideForm(v:lnum)

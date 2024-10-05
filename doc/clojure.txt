@@ -100,16 +100,16 @@ Pick from the following multi-line string indent styles:
 
 						*clojure-indent-deprecations*
 
-During the Clojure indentation script rebuild, the following configuration
-options were removed/replaced:
+As part of the Clojure indentation script rebuild, the following configuration
+options have been removed/replaced:
 
 * *g:clojure_maxlines*                -> none
-* *g:clojure_cljfmt_compat*:          -> |g:clojure_indent_style|
+* *g:clojure_cljfmt_compat*           -> |g:clojure_indent_style|
 * *g:clojure_align_subforms*          -> |g:clojure_indent_style|
 * *g:clojure_align_multiline_strings* -> |g:clojure_indent_multiline_strings|
-* *g:clojure_special_indent_words*:   -> |g:clojure_indent_rules|
-* *g:clojure_fuzzy_indent*:           -> none
-* *g:clojure_fuzzy_indent_blacklist*: -> none
+* *g:clojure_special_indent_words*    -> |g:clojure_indent_rules|
+* *g:clojure_fuzzy_indent*            -> none
+* *g:clojure_fuzzy_indent_blacklist*  -> none
 * |'lispwords'|                       -> |g:clojure_indent_rules|
 
 
