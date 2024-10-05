@@ -22,32 +22,32 @@ to use.  Choose from several common presets:
 * `standard` (default):
   Conventional Clojure indentation.  (Clojure Style Guide [1]) >
 
-	(my-fn 1
-	       2)
-
-	(my-fn
-	 1
-	 2)
+	|(filter even?
+	|        [1 2 3])
+	|
+	|(filter
+	| even?
+	| [1 2 3])
 <
 * `traditional`:
   Indent like traditional Lisps. >
 
-	(my-fn 1
-	       2)
-
-	(my-fn
-	  1
-	  2)
+	|(filter even?
+	|        [1 2 3])
+	|
+	|(filter
+	|  even?
+	|  [1 2 3])
 <
 * `uniform`:
   Indent uniformly to 2 spaces with no alignment (aka Tonsky indentation [2]).
 >
-	(my-fn 1
-	  2)
-
-	(my-fn
-	  1
-	  2)
+	|(filter even?
+	|  [1 2 3])
+	|
+	|(filter
+	|  even?
+	|  [1 2 3])
 <
 [1]: https://guide.clojure.style/
 [2]: https://tonsky.me/blog/clojurefmt/
@@ -86,7 +86,7 @@ Pick from the following multi-line string indent styles:
 * `pretty`:
   Align to the back of the `"` or `#"` delimiter.
 >
-	|(def aligned
+	|(def pretty
 	|  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
 	|   eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 <
