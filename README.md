@@ -2,11 +2,6 @@
 
 **Configurable [Clojure][] syntax highlighting, indentation (and more) for Vim and Neovim!**
 
-<!-- TODO
-- Basic insert-mode completion of special forms and public vars in
-  `clojure.core`.  (Invoke with `<C-x><C-o>` or `<C-x><C-u>`.)
--->
-
 > [!TIP]
 > This plugin comes packaged with Vim and Neovim.  However if you would like to
 > always use the latest version, you can install this plugin like you would any
@@ -51,7 +46,7 @@ set `(:refer-clojure :only [])`.
 Set this variable to `1` to enable highlighting of the
 "[discard reader macro](https://clojure.org/guides/weird_characters#_discard)".
 Due to current limitations in Vim's syntax rules, this option won't highlight
-stacked discard macros (e.g. `#_#_`).  This inconsitency is why this option is
+stacked discard macros (e.g. `#_#_`).  This inconsistency is why this option is
 disabled by default.
 
 
@@ -60,7 +55,7 @@ disabled by default.
 Clojure indentation differs somewhat from traditional Lisps, due in part to the
 use of square and curly brackets, and otherwise by community convention.  As
 these conventions are not universally followed, the Clojure indent script
-offers ways to adjust the indentaion.
+offers ways to adjust the indentation.
 
 > [!WARNING]
 > The indentation code has recently been rebuilt which included the
@@ -129,7 +124,14 @@ list, vector or map that extends over more than one line can be folded using
 the standard Vim fold commands.
 
 (Note that this option will not work with scripts that redefine the bracket
-regions, such as rainbow parenphesis plugins.)
+regions, such as rainbow parenthesis plugins.)
+
+
+## Insert-mode completion
+
+Very basic insert-mode completion of special forms and public vars from
+`clojure.core` is included in Clojure.vim.  Invoke it with `<C-x><C-o>` or
+`<C-x><C-u>`.
 
 
 ## Contribute
