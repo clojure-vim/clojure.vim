@@ -52,16 +52,13 @@ call s:SConf('clojure_fuzzy_indent_patterns', [
 " - 1+: 2 space indentation, no alignment.
 " Defaults copied from: https://github.com/clojure-emacs/clojure-mode/blob/0e62583b5198f71856e4d7b80e1099789d47f2ed/clojure-mode.el#L1800-L1875
 call s:SConf('clojure_indent_rules', {
-\   'ns': 1,
-\   'fn': 1, 'def': 1, 'defn': 1, 'bound-fn': 1,
-\   'let': 1, 'binding': 1, 'defmethod': 1,
+\   'fn': 1, 'def': 1, 'defn': 1, 'bound-fn': 1, 'let': 1, 'binding': 1, 'defmethod': 1,
 \   'if': 1, 'if-not': 1, 'if-some': 1, 'if-let': 1,
 \   'when': 1, 'when-not': 1, 'when-some': 1, 'when-let': 1, 'when-first': 1,
 \   'case': 1, 'cond': 0, 'cond->': 1, 'cond->>': 1, 'condp': 2,
 \   'while': 1, 'loop': 1, 'for': 1, 'doseq': 1, 'dotimes': 1,
-\   'do': 0, 'doto': 1, 'comment': 0, 'as->': 2,
-\   'delay': 0, 'future': 0, 'locking': 1,
-\   'try': 0, 'catch': 2, 'finally': 0,
+\   'ns': 1, 'do': 0, 'doto': 1, 'comment': 0, 'as->': 2,
+\   'delay': 0, 'future': 0, 'locking': 1, 'try': 0, 'catch': 2, 'finally': 0,
 \   'reify': 1, 'proxy': 2, 'defrecord': 2, 'defprotocol': 1, 'definterface': 1,
 \   'extend': 1, 'extend-protocol': 1, 'extend-type': 1,
 "\  (letfn) (1 ((:defn)) nil)
@@ -265,8 +262,7 @@ function! s:ListIndent(delim_pos)
 
 	" TODO: handle complex indentation (e.g. letfn) and introduce
 	" indentation config similar to Emacs' clojure-mode and cljfmt.
-	" This new config option `clojure_indent_rules` should replace most
-	" other indentation options.  Skip if "traditional" style was chosen.
+	" Skip if "traditional" style was chosen.
 
 	" TODO: simplify this.
 	let syms = split(ln_content, '[[:space:],;()\[\]{}@\\"^~`]', 1)

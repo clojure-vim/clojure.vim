@@ -61,14 +61,16 @@ offers ways to adjust the indentation.
 > The indentation code has recently been rebuilt which included the
 > removal/replacement of the following configuration options:
 >
-> - `clojure_maxlines`
-> - `clojure_align_subforms`
-> - `clojure_align_multiline_strings`
-> - `clojure_fuzzy_indent`
-> - `clojure_fuzzy_indent_blacklist`
-> - `clojure_special_indent_words`
-> - `clojure_cljfmt_compat`
-> - `'lispwords'`
+> | Config option                     | Replacement (if any)               |
+> |-----------------------------------|------------------------------------|
+> | `clojure_maxlines`                |                                    |
+> | `clojure_cljfmt_compat`           | `clojure_indent_style`             |
+> | `clojure_align_subforms`          | `clojure_indent_style`             |
+> | `clojure_align_multiline_strings` | `clojure_indent_multiline_strings` |
+> | `clojure_fuzzy_indent`            |                                    |
+> | `clojure_fuzzy_indent_blacklist`  |                                    |
+> | `clojure_special_indent_words`    | `clojure_indent_rules`             |
+> | `'lispwords'`                     | `clojure_indent_rules`             |
 
 
 ### Indentation style
