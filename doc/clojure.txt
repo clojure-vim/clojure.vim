@@ -5,67 +5,116 @@ INTRODUCTION						*clojure-introduction*
 Clojure runtime files for Vim.
 
 
-CLOJURE					*ft-clojure-indent* *clojure-indent*
+CLOJURE					*ft-clojure-indent*  *clojure-indent*
 
-By default Clojure.vim will attempt to follow the indentation rules in the
-Clojure Style Guide, [1] but various configuration options are provided to
-alter the indentation as you prefer.
+Clojure indentation differs somewhat from traditional Lisps, due in part to
+the use of square and curly brackets, and otherwise by community convention.
+As these conventions are not universally followed, the Clojure indent script
+offers ways to adjust the indentation.
 
-[1]: https://guide.clojure.style
 
-WARNING: if your installation of Vim does not include `searchpairpos()`, the
-indent script falls back to normal 'lisp' and 'lispwords' indenting,
-ignoring the following indentation options.
+						*g:clojure_indent_style*
+						*b:clojure_indent_style*
 
-						*b:clojure_indent_rules*
+The `clojure_indent_style` config option controls the general indentation style
+to use.  Choose from several common presets:
+
+* `standard` (default):
+  Conventional Clojure indentation.  (Clojure Style Guide [1]) >
+
+	(my-fn 1
+	       2)
+
+	(my-fn
+	 1
+	 2)
+<
+* `traditional`:
+  Indent like traditional Lisps. >
+
+	(my-fn 1
+	       2)
+
+	(my-fn
+	  1
+	  2)
+<
+* `uniform`:
+  Indent uniformly to 2 spaces with no alignment (aka Tonsky indentation [2]).
+>
+	(my-fn 1
+	  2)
+
+	(my-fn
+	  1
+	  2)
+<
+[1]: https://guide.clojure.style/
+[2]: https://tonsky.me/blog/clojurefmt/
+
+
 						*g:clojure_indent_rules*
+						*b:clojure_indent_rules*
 
 TODO: add this option and write this section.
 
-					*b:clojure_align_multiline_strings*
-					*g:clojure_align_multiline_strings*
 
-Alter alignment of newly created lines within multi-line strings (and regular
-expressions).
+					*g:clojure_fuzzy_indent_patterns*
+					*b:clojure_fuzzy_indent_patterns*
+
+TODO: add this option and write this section.
+
+
+					*g:clojure_indent_multiline_strings*
+					*b:clojure_indent_multiline_strings*
+
+Control alignment of new lines within Clojure multi-line strings and regular
+expressions with `clojure_indent_multiline_strings`.
+
+NOTE: indenting with |=| will not alter the indentation within multi-line
+strings, as this could break intentional formatting.
+
+Pick from the following multi-line string indent styles:
+
+* `standard` (default):
+  Align to the front of the `"` or `#"` delimiter.  Ideal for doc-strings.
 >
-	;; let g:clojure_align_multiline_strings = 0  " Default
-	(def default
-	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-	  eiusmod tempor incididunt ut labore et dolore magna aliqua.")
-
-	;; let g:clojure_align_multiline_strings = 1
-	(def aligned
-	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-	   eiusmod tempor incididunt ut labore et dolore magna aliqua.")
-
-	;; let g:clojure_align_multiline_strings = -1
-	(def traditional
-	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-	eiusmod tempor incididunt ut labore et dolore magna aliqua.")
+	|(def standard
+	|  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	|  eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 <
-NOTE: indenting the string with |=| will not alter the indentation of existing
-multi-line strings as that would break intentional formatting.
-
-						*g:clojure_align_subforms*
-
-By default, parenthesized compound forms that look like function calls and
-whose head subform is on its own line have subsequent subforms indented by
-two spaces relative to the opening paren:
+* `pretty`:
+  Align to the back of the `"` or `#"` delimiter.
 >
-	(foo
-	  bar
-	  baz)
+	|(def aligned
+	|  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	|   eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 <
-Setting this option to `1` changes this behaviour so that all subforms are
-aligned to the same column, emulating the default behaviour of
-clojure-mode.el:
+* `traditional`:
+  No indent, align to left edge of the file.
 >
-	(foo
-	 bar
-	 baz)
+	|(def traditional
+	|  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	|eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 <
+
+						*clojure-indent-deprecations*
+
+During the Clojure indentation script rebuild, the following configuration
+options were removed/replaced:
+
+* *g:clojure_maxlines*                -> none
+* *g:clojure_cljfmt_compat*:          -> |g:clojure_indent_style|
+* *g:clojure_align_subforms*          -> |g:clojure_indent_style|
+* *g:clojure_align_multiline_strings* -> |g:clojure_indent_multiline_strings|
+* *g:clojure_special_indent_words*:   -> |g:clojure_indent_rules|
+* *g:clojure_fuzzy_indent*:           -> none
+* *g:clojure_fuzzy_indent_blacklist*: -> none
+* |'lispwords'|                       -> |g:clojure_indent_rules|
+
 
 CLOJURE							*ft-clojure-syntax*
+
 
 						*g:clojure_syntax_keywords*
 

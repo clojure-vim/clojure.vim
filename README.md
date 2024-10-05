@@ -17,7 +17,7 @@ filetype plugin indent on
 
 ## Syntax highlighting
 
-#### `g:clojure_syntax_keywords`
+### `g:clojure_syntax_keywords`
 
 Syntax highlighting of public vars in `clojure.core` is provided by default,
 but additional symbols can be highlighted by adding them to the
@@ -41,7 +41,7 @@ will not be highlighted by default.  This is useful for namespaces that have
 set `(:refer-clojure :only [])`.
 
 
-#### `g:clojure_discard_macro`
+### `g:clojure_discard_macro`
 
 Set this variable to `1` to enable highlighting of the
 "[discard reader macro](https://clojure.org/guides/weird_characters#_discard)".
@@ -61,6 +61,8 @@ offers ways to adjust the indentation.
 > The indentation code has recently been rebuilt which included the
 > removal/replacement of the following configuration options:
 >
+> - `clojure_maxlines`
+> - `clojure_align_subforms`
 > - `clojure_align_multiline_strings`
 > - `clojure_fuzzy_indent`
 > - `clojure_fuzzy_indent_blacklist`
