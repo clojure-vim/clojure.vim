@@ -40,19 +40,28 @@ endfunction
 "   - traditional (Emacs equiv: align-arguments)
 "   - uniform     (Emacs equiv: always-indent)
 call s:SConf('clojure_indent_style', 'standard')
-
 call s:SConf('clojure_align_multiline_strings', 0)
-
 call s:SConf('clojure_fuzzy_indent_patterns', [
 \   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
 \   '^def',
 \   '^let'
 \ ])
 
+" NOTE: When in "uniform" mode, ignores the "indent_style" and "indent_patterns" options.
+
+" FIXME: fix reader conditional tests.  Include (:require [...]) test cases.
+"   Is it possible to fix reader conditional indentation?
+
+" TODO: make the indentation function usable from other Clojure-like languages.
+
+" TODO: explain the different numbers.  The "indent_style" option can override "0"
+" - -1  Not in dictionary, follow defaults.
+" - 0:  Align to first argument, else 2 space indentation.
+" - 1+: 2 space indentation, no alignment.
 " Defaults copied from: https://github.com/clojure-emacs/clojure-mode/blob/0e62583b5198f71856e4d7b80e1099789d47f2ed/clojure-mode.el#L1800-L1875
 call s:SConf('clojure_indent_rules', {
 \   'ns': 1,
-\   'fn': 1, 'def': 1, 'defn': 1, 'bound-fn': 1, 'fdef': 1,
+\   'fn': 1, 'def': 1, 'defn': 1, 'bound-fn': 1,
 \   'let': 1, 'binding': 1, 'defmethod': 1,
 \   'if': 1, 'if-not': 1, 'if-some': 1, 'if-let': 1,
 \   'when': 1, 'when-not': 1, 'when-some': 1, 'when-let': 1, 'when-first': 1,
@@ -64,14 +73,14 @@ call s:SConf('clojure_indent_rules', {
 \   'reify': 1, 'proxy': 2, 'defrecord': 2, 'defprotocol': 1, 'definterface': 1,
 \   'extend': 1, 'extend-protocol': 1, 'extend-type': 1,
 "\  (letfn) (1 ((:defn)) nil)
-"\  (reify) (:defn (1))
 "\  (deftype defrecord proxy) (2 nil nil (:defn))
 "\  (defprotocol definterface extend-protocol extend-type) (1 (:defn))
 "\  ClojureScript
 \   'this-as': 1, 'specify': 1, 'specify!': 1,
-"\  (specify specify!) (1 :defn)
 "\  clojure.test
 \   'deftest': 1, 'testing': 1, 'use-fixtures': 1, 'are': 2,
+"\  clojure.spec.alpha
+\   'fdef': 1,
 "\  core.async
 \   'alt!': 0, 'alt!!': 0, 'go': 0, 'go-loop': 1, 'thread': 0,
 "\  core.logic
@@ -217,11 +226,10 @@ function! s:InsideForm(lnum)
 	return ['^', [0, 0]]  " Default to top-level.
 endfunction
 
-" Returns "1" when the "=" operator is currently active.
+" Returns "1" when the "=" operator is currently active, else "0".
 function! s:EqualsOperatorInEffect()
 	return exists('*state')
-		\ ? v:operator ==# '=' && state('o') ==# 'o'
-		\ : 0
+		\ ? v:operator ==# '=' && state('o') ==# 'o' : 0
 endfunction
 
 function! s:StringIndent(delim_pos)
@@ -249,7 +257,12 @@ function! s:ListIndent(delim_pos)
 	" TODO: extend "s:InsideForm" to provide information about the
 	" subforms being formatted to avoid second parsing step.
 
+	let indent_style = s:Conf('clojure_indent_style', s:clojure_indent_style)
 	let base_indent = s:PosToCharCol(a:delim_pos)
+
+	" Uniform indentation: just indent by 2 spaces.
+	if indent_style ==# 'uniform' | return base_indent + 1 | endif
+
 	let ln = getline(a:delim_pos[0])
 	let ln_content = ln[a:delim_pos[1]:]
 
@@ -265,7 +278,7 @@ function! s:ListIndent(delim_pos)
 	" TODO: handle complex indentation (e.g. letfn) and introduce
 	" indentation config similar to Emacs' clojure-mode and cljfmt.
 	" This new config option `clojure_indent_rules` should replace most
-	" other indentation options.
+	" other indentation options.  Skip if "traditional" style was chosen.
 
 	" TODO: simplify this.
 	let syms = split(ln_content, '[[:space:],;()\[\]{}@\\"^~`]', 1)
@@ -292,21 +305,18 @@ function! s:ListIndent(delim_pos)
 	endif
 
 	" 2. Function indentation
-	"    if first operand is on the same line? (and not a keyword)
+	"    if first operand is on the same line?
 	"      - Indent subsequent lines to align with first operand.
 	"    else
 	"      - Indent 1 or 2 spaces.
-	let indent_style = s:Conf('clojure_indent_style', s:clojure_indent_style)
-	if indent_style !=# 'uniform' && ln_content[0] !=# ':'
-		let pos = s:FirstFnArgPos(a:delim_pos)
-		if pos != [0, 0] | return s:PosToCharCol(pos) - 1 | endif
-	endif
+	let pos = s:FirstFnArgPos(a:delim_pos)
+	if pos != [0, 0] | return s:PosToCharCol(pos) - 1 | endif
 
 	" Fallback indentation for operands.  When "clojure_indent_style" is
-	" "standard", use 1 space indentation, else 2 space indentation.
+	" "traditional", use 2 space indentation, else 1 space indentation.
 	" The "sym_match" check handles the case when "clojure_indent_rules"
-	" specified a value of "0".
-	return base_indent + (indent_style !=# 'standard' || sym_match == 0)
+	" specified a value of "0" for "standard" style.
+	return base_indent + (indent_style ==# 'traditional' || sym_match == 0)
 endfunction
 
 function! s:ClojureIndent()
