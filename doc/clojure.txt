@@ -114,22 +114,19 @@ ABOUT							*clojure-about*
 This document and associated runtime files are maintained at:
 https://github.com/clojure-vim/clojure.vim
 
-Distributed under the Vim license. See |license|.
+Maintainer: Alex Vear <alex@vear.uk>
 
-syntax/clojure.vim
-
-	Copyright 2007-2008 (c) Toralf Wittner <toralf.wittner@gmail.com>
-	Copyright 2008-2012 (c) Meikel Brandmeyer <mb@kotka.de>
-
+syntax/clojure.vim,
 ftdetect/clojure.vim,
 ftplugin/clojure.vim,
 indent/clojure.vim
 
+	Distributed under the Vim license.  See |license|.
+
+	Copyright 2007-2008 (c) Toralf Wittner <toralf.wittner@gmail.com>
 	Copyright 2008-2012 (c) Meikel Brandmeyer <mb@kotka.de>
-
-Modified and relicensed under the Vim License for distribution with Vim:
-
-	Copyright 2013-2014 (c) Sung Pae <self@sungpae.com>
+	Copyright 2013-2018 (c) Sung Pae <self@sungpae.com>
+	Copyright 2020–2024 (c) The clojure-vim contributors
 
 Last Change: %%RELEASE_DATE%%
 
