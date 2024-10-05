@@ -35,19 +35,13 @@ function! s:Conf(opt, fallback) abort
 	return get(b:, a:opt, get(g:, a:opt, a:fallback))
 endfunction
 
-" Available options:
-"   - standard    (Emacs equiv: always-align)
-"   - traditional (Emacs equiv: align-arguments)
-"   - uniform     (Emacs equiv: always-indent)
 call s:SConf('clojure_indent_style', 'standard')
-call s:SConf('clojure_align_multiline_strings', 0)
+call s:SConf('clojure_indent_multiline_strings', 'standard')
 call s:SConf('clojure_fuzzy_indent_patterns', [
 \   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
 \   '^def',
 \   '^let'
 \ ])
-
-" NOTE: When in "uniform" mode, ignores the "indent_style" and "indent_patterns" options.
 
 " FIXME: fix reader conditional tests.  Include (:require [...]) test cases.
 "   Is it possible to fix reader conditional indentation?
@@ -237,13 +231,13 @@ function! s:StringIndent(delim_pos)
 	let m = mode()
 	if m ==# 'i' || (m ==# 'n' && ! s:EqualsOperatorInEffect())
 		" If in insert mode, or normal mode but "=" is not in effect.
-		let alignment = s:Conf('clojure_align_multiline_strings', s:clojure_align_multiline_strings)
-		" -1: Indent along left edge, like traditional Lisps.
-		"  0: Indent in alignment with end of the string start delimiter.
-		"  1: Indent in alignment with string start delimiter.
-		if     alignment == -1 | return 0
-		elseif alignment ==  1 | return s:PosToCharCol(a:delim_pos)
-		else
+		let alignment = s:Conf('clojure_indent_multiline_strings', s:clojure_indent_multiline_strings)
+		" standard:    Indent in alignment with end of the string start delimiter.
+		" traditional: Indent along left edge, like traditional Lisps.
+		" pretty:      Indent in alignment with string start delimiter.
+		if     alignment ==# 'traditional' | return 0
+		elseif alignment ==# 'pretty'      | return s:PosToCharCol(a:delim_pos)
+		else                " standard
 			let col = a:delim_pos[1]
 			let is_regex = col > 1 && getline(a:delim_pos[0])[col - 2] ==# '#'
 			return s:PosToCharCol(a:delim_pos) - (is_regex ? 2 : 1)

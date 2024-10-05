@@ -66,6 +66,7 @@ offers ways to adjust the indentaion.
 > The indentation code has recently been rebuilt which included the removal of
 > the following configuration options:
 >
+> - `clojure_align_multiline_strings`
 > - `clojure_fuzzy_indent`
 > - `clojure_fuzzy_indent_blacklist`
 > - `clojure_special_indent_words`
@@ -85,43 +86,40 @@ to use.  Choose from several common presets:
 | `uniform`     | | Indent uniformly to 2 spaces with no alignment (a.k.a. [_Tonsky_ indentation](https://tonsky.me/blog/clojurefmt/)). |
 
 ```vim
-let g:clojure_indent_style = 'uniform'      " Set the default indent style...
-let b:clojure_indent_style = 'traditional'  " ...or override the default per-buffer.
+let g:clojure_indent_style = 'uniform'      " Set the default...
+let b:clojure_indent_style = 'traditional'  " ...or override it per-buffer.
 ```
 
 
 ### Indentation rules
 
-`clojure_indent_rules`
+> [!NOTE]
+> These options are ignored if an indentation style of "uniform" is selected.
+
+`clojure_indent_rules` & `clojure_fuzzy_indent_patterns`
 
 
 ### Multi-line strings
 
 Control alignment of _new_ lines within Clojure multi-line strings and regular
-expressions with `clojure_align_multiline_strings`.
+expressions with `clojure_indent_multiline_strings`.
 
 > [!NOTE]
 > Indenting with `=` will not alter the indentation within multi-line strings,
 > as this could break intentional formatting.
 
-```clojure
-;; let g:clojure_align_multiline_strings = 0  " Default
-(def default
-  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua.")
+Pick from the following multi-line string indent styles:
 
-;; let g:clojure_align_multiline_strings = 1
-(def aligned
-  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-   eiusmod tempor incididunt ut labore et dolore magna aliqua.")
+| Value | Default | Description |
+|-------|---------|-------------|
+| `standard` | ✅ | Align to the _front_ of the `"` or `#"` delimiter.  Ideal for doc-strings. |
+| `pretty`      | | Align to the _back_ of the `"` or `#"` delimiter. |
+| `traditional` | | No indent: align to left edge of file. |
 
-;; let g:clojure_align_multiline_strings = -1
-(def traditional
-  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-eiusmod tempor incididunt ut labore et dolore magna aliqua.")
+```vim
+let g:clojure_indent_multiline_strings = 'pretty'       " Set the default...
+let b:clojure_indent_multiline_strings = 'traditional'  " ...or override it per-buffer.
 ```
-
-There is also a buffer-local (`b:`) version of this option.
 
 
 ## Code folding
