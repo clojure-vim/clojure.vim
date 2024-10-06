@@ -83,3 +83,15 @@
 ('foo
  bar
  biz)
+
+(ns my-namespace
+  (:require [foo :as f]
+            [bar :refer [x]])
+  (:import
+   (java.io File
+            IOException)
+   [clojure.lang PersistentQueue]))
+
+(import '(java.io File
+                  IOException)
+        '(clojure.lang PersistentQueue))

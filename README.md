@@ -95,6 +95,8 @@ let b:clojure_indent_style = 'traditional'  " ...or override it per-buffer.
 > [!NOTE]
 > These options are ignored if an indentation style of "uniform" is selected.
 
+<!-- TODO: write this section. -->
+
 `clojure_indent_rules` & `clojure_fuzzy_indent_patterns`
 
 

@@ -22,9 +22,6 @@ setlocal noautoindent nosmartindent nolisp
 setlocal softtabstop=2 shiftwidth=2 expandtab
 setlocal indentkeys=!,o,O
 
-" FIXME: fix reader conditional tests.  Include (:require [...]) test cases.
-"   Is it possible to fix reader conditional indentation?
-
 " Set a new configuration option with a default value.  Assigns a script-local
 " version too, to be used as a default fallback if the global was "unlet".
 function! s:SConf(name, default) abort
@@ -45,6 +42,8 @@ call s:SConf('clojure_fuzzy_indent_patterns', [
 \   '^def',
 \   '^let'
 \ ])
+
+" FIXME: reader conditional indentation?
 
 " TODO: explain the different numbers.  The "indent_style" option can override "0"
 " - -1  Not in dictionary, follow defaults.
