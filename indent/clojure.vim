@@ -38,9 +38,9 @@ endfunction
 call s:SConf('clojure_indent_style', 'standard')
 call s:SConf('clojure_indent_multiline_strings', 'standard')
 call s:SConf('clojure_fuzzy_indent_patterns', [
-\   '^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
-\   '^def',
-\   '^let'
+\   '\m^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
+\   '\m^def',
+\   '\m^let'
 \ ])
 
 " FIXME: reader conditional indentation?
@@ -89,13 +89,13 @@ function! s:FirstFnArgPos(pos)
 	let lnr = a:pos[0]
 	let s:in_form_current_form = a:pos
 	call cursor(lnr, a:pos[1] + 1)
-	return searchpos('[ ,]\+\zs', 'z', lnr, 0, function('<SID>IsSubForm'))
+	return searchpos('\m[ ,]\+\zs', 'z', lnr, 0, function('<SID>IsSubForm'))
 endfunction
 
 " Used by "s:FirstFnArgPos" function to skip over subforms as the first value
 " in a list form.
 function! s:IsSubForm()
-	let pos = searchpairpos('[([{"]', '', '[)\]}"]', 'b')
+	let pos = searchpairpos('\m[([{"]', '', '\m[)\]}"]', 'b')
 	return pos != [0, 0] && pos != s:in_form_current_form
 endfunction
 
@@ -118,7 +118,7 @@ function! s:TokeniseLine(line_num)
 	while 1
 		" We perform searches within the buffer (and move the cusor)
 		" for better performance than looping char by char in a line.
-		let token_pos = searchpos('[()[\]{};"]', 'bW', a:line_num)
+		let token_pos = searchpos('\m[()[\]{};"]', 'bW', a:line_num)
 
 		" No more matches, exit loop.
 		if token_pos == [0, 0] | break | endif
@@ -266,13 +266,13 @@ function! s:ListIndent(delim_pos)
 	" TODO: simplify this.
 	let syms = split(ln_content, '[[:space:],;()\[\]{}@\\"^~`]', 1)
 
-	if !empty(syms)
+	if ! empty(syms)
 		let sym = syms[0]
 		if sym =~# '\v^%([a-zA-Z!$&*_+=|<>?-]|[^\x00-\x7F])'
 
 			" TODO: handle namespaced and non-namespaced variants.
-			if sym =~# './.'
-				let [_namespace, name] = split(sym, '/')
+			if sym =~# '\m./.'
+				let [_namespace, name] = split(sym, '\m/')
 			endif
 
 			" TODO: replace `clojure_fuzzy_indent_patterns` with `clojure_indent_patterns`?
