@@ -18,9 +18,8 @@ set cpoptions&vim
 
 let b:undo_indent = 'setlocal autoindent< smartindent< expandtab< softtabstop< shiftwidth< indentexpr< indentkeys< lisp<'
 
-setlocal noautoindent nosmartindent nolisp
+setlocal noautoindent nosmartindent nolisp indentkeys=!,o,O
 setlocal softtabstop=2 shiftwidth=2 expandtab
-setlocal indentkeys=!,o,O
 
 " Set a new configuration option with a default value.  Assigns a script-local
 " version too, to be used as a default fallback if the global was "unlet".
@@ -60,9 +59,8 @@ call s:SConf('clojure_indent_rules', {
 \   'delay': 0, 'future': 0, 'locking': 1, 'try': 0, 'catch': 2, 'finally': 0,
 \   'reify': 1, 'proxy': 2, 'defrecord': 2, 'defprotocol': 1, 'definterface': 1,
 \   'extend': 1, 'extend-protocol': 1, 'extend-type': 1,
-"\  (letfn) (1 ((:defn)) nil)
-"\  (deftype defrecord proxy) (2 nil nil (:defn))
-"\  (defprotocol definterface extend-protocol extend-type) (1 (:defn))
+"\  [letfn] [1 [[:defn]] nil]  [deftype defrecord proxy] [2 nil nil [:defn]]
+"\  [defprotocol definterface extend-protocol extend-type] [1 [:defn]]
 "\  ClojureScript
 \   'this-as': 1, 'specify': 1, 'specify!': 1,
 "\  clojure.test
@@ -159,9 +157,7 @@ function! s:InsideForm(lnum)
 		let [line_tokens, possible_comment] = s:TokeniseLine(lnum)
 
 		" In case of comments, copy "tokens" so we can undo alterations.
-		if possible_comment
-			let prev_tokens = copy(tokens)
-		endif
+		if possible_comment | let prev_tokens = copy(tokens) | endif
 
 		" Reduce tokens from line "lnum" into "tokens".
 		for tk in line_tokens
@@ -180,11 +176,9 @@ function! s:InsideForm(lnum)
 						let first_string_pos = tk
 					endif
 				endif
-			elseif in_string
-				" In string: ignore other tokens.
+			elseif in_string  " In string: ignore other tokens.
 			elseif possible_comment && tk[0] ==# ';'
-				" Comment: undo previous token applications on
-				" this line.
+				" Comment: undo previous token applications on this line.
 				let tokens = copy(prev_tokens)
 			elseif ! empty(tokens) && get(s:pairs, tk[0], '') ==# tokens[-1][0]
 				" Matching pair: drop the last item in tokens.
@@ -232,8 +226,7 @@ function! s:StringIndent(delim_pos)
 			let is_regex = col > 1 && getline(a:delim_pos[0])[col - 2] ==# '#'
 			return s:PosToCharCol(a:delim_pos) - (is_regex ? 2 : 1)
 		endif
-	else
-		return -1  " Keep existing indent.
+	else | return -1  " Keep existing indent.
 	endif
 endfunction
 
@@ -250,21 +243,18 @@ function! s:ListIndent(delim_pos)
 	let ln = getline(a:delim_pos[0])
 	let ln_content = ln[a:delim_pos[1]:]
 
-	let sym_match = -1
-
 	" 1. Macro/rule indentation
 	"    if starts with a symbol, extract it.
 	"      - Split namespace off symbol and #'/' syntax.
 	"      - Check against pattern rules and apply indent on match.
 	"      - Look up in rules table and apply indent on match.
-	"    else, not found, go to 2.
+	"    else: not found, go to 2.
 
-	" TODO: handle complex indentation (e.g. letfn) and introduce
-	" indentation config similar to Emacs' clojure-mode and cljfmt.
-	" Skip if "traditional" style was chosen.
+	" TODO: handle complex indentation (e.g. letfn).  Skip if "traditional" style was chosen?
 
 	" TODO: simplify this.
 	let syms = split(ln_content, '[[:space:],;()\[\]{}@\\"^~`]', 1)
+	let sym_match = -1
 
 	if ! empty(syms)
 		let sym = syms[0]
@@ -290,8 +280,7 @@ function! s:ListIndent(delim_pos)
 	" 2. Function indentation
 	"    if first operand is on the same line?
 	"      - Indent subsequent lines to align with first operand.
-	"    else
-	"      - Indent 1 or 2 spaces.
+	"    else: indent 1 or 2 spaces.
 	let pos = s:FirstFnArgPos(a:delim_pos)
 	if pos != [0, 0] | return s:PosToCharCol(pos) - 1 | endif
 
