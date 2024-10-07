@@ -6,4 +6,8 @@
                  :comments ":help license"}
   :dependencies [[org.clojure/clojure "1.12.0"]
                  [org.clojure/data.csv "1.1.0"]
-                 [frak "0.1.9" :exclusions [org.clojure/clojurescript]]])
+                 [frak "0.1.9" :exclusions [org.clojure/clojurescript]]]
+  :profiles {:test {:managed-dependencies [[org.clojure/tools.cli "1.0.219"]
+                                           [org.clojure/tools.reader "1.3.6"]]
+                    :dependencies [[lambdaisland/kaocha "1.85.1342"]]}}
+  :aliases  {"test" ["with-profile" "+test" "run" "-m" "kaocha.runner"]})
