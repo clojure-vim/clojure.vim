@@ -16,10 +16,9 @@ let b:did_indent = 1
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-let b:undo_indent = 'setlocal autoindent< smartindent< expandtab< softtabstop< shiftwidth< indentexpr< indentkeys< lisp<'
-
 setlocal noautoindent nosmartindent nolisp indentkeys=!,o,O
 setlocal softtabstop=2 shiftwidth=2 expandtab
+let b:undo_indent = 'setlocal autoindent< smartindent< expandtab< softtabstop< shiftwidth< indentexpr< indentkeys< lisp<'
 
 " Set a new configuration option with a default value.  Assigns a script-local
 " version too, to be used as a default fallback if the global was "unlet".
@@ -76,8 +75,7 @@ call s:SConf('clojure_indent_rules', {
 " Returns "1" if position "i_char" in "line_str" is preceded by an odd number
 " of backslash characters (i.e. escaped).
 function! s:IsEscaped(line_str, i_char)
-	let ln = a:line_str[: a:i_char - 1]
-	return ! strlen(trim(ln, '\', 2)) % 2
+	return ! strlen(trim(a:line_str[: a:i_char - 1], '\', 2)) % 2
 endfunction
 
 " Used during list function indentation.  Returns the position of the first
@@ -100,8 +98,7 @@ endfunction
 " Converts a cursor position into a characterwise cursor column position (to
 " handle multibyte characters).
 function! s:PosToCharCol(pos)
-	call cursor(a:pos)
-	return getcursorcharpos()[2]
+	call cursor(a:pos) | return getcursorcharpos()[2]
 endfunction
 
 " Repeatedly search for indentation significant Clojure tokens on a given line
@@ -190,8 +187,7 @@ function! s:InsideForm(lnum)
 		endfor
 
 		if ! empty(tokens) && has_key(s:pairs, tokens[0][0]) && ! in_string
-			" Match found!
-			return tokens[0]
+			return tokens[0]  " Match found!
 		endif
 
 		let lnum -= 1
@@ -199,8 +195,7 @@ function! s:InsideForm(lnum)
 
 	" TODO: can this conditional be simplified?
 	if (in_string && first_string_pos != []) || (! empty(tokens) && tokens[0][0] ==# '"')
-		" Must have been in a multi-line string or regular expression
-		" as the string was never closed.
+		" String was not closed, must have been in a multi-line string or regex.
 		return first_string_pos
 	endif
 
@@ -209,8 +204,7 @@ endfunction
 
 " Returns "1" when the "=" operator is currently active, else "0".
 function! s:EqualsOperatorInEffect()
-	return exists('*state')
-		\ ? v:operator ==# '=' && state('o') ==# 'o' : 0
+	return exists('*state') ? v:operator ==# '=' && state('o') ==# 'o' : 0
 endfunction
 
 function! s:StringIndent(delim_pos)
@@ -249,8 +243,7 @@ function! s:ListIndent(delim_pos)
 	"      - Check against pattern rules and apply indent on match.
 	"      - Look up in rules table and apply indent on match.
 	"    else: not found, go to 2.
-
-	" TODO: handle complex indentation (e.g. letfn).  Skip if "traditional" style was chosen?
+	"    TODO: handle complex indentation (e.g. letfn).  Skip if "traditional" style was chosen?
 
 	" TODO: simplify this.
 	let syms = split(ln_content, '[[:space:],;()\[\]{}@\\"^~`]', 1)
@@ -259,7 +252,6 @@ function! s:ListIndent(delim_pos)
 	if ! empty(syms)
 		let sym = syms[0]
 		if sym =~# '\v^%([a-zA-Z!$&*_+=|<>?-]|[^\x00-\x7F])'
-
 			" TODO: handle namespaced and non-namespaced variants.
 			if sym =~# '\m./.'
 				let [_namespace, name] = split(sym, '\m/')
