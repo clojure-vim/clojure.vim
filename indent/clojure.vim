@@ -36,17 +36,15 @@ endfunction
 call s:SConf('clojure_indent_style', 'standard')
 call s:SConf('clojure_indent_multiline_strings', 'standard')
 call s:SConf('clojure_fuzzy_indent_patterns', [
-\   '\m^with-\%(meta\|in-str\|out-str\|loading-context\)\@!',
-\   '\m^def',
-\   '\m^let'
+\   '\m^def', '\m^let', '\m^with-\%(meta\|in-str\|out-str\|loading-context\)\@!'
 \ ])
 
 " FIXME: reader conditional indentation?
 
 " TODO: explain the different numbers.  The "indent_style" option can override "0"
-" - -1  Not in dictionary, follow defaults.
-" - 0:  Align to first argument, else 2 space indentation.
-" - 1+: 2 space indentation, no alignment.
+"   -1 : Not in dictionary, follow defaults.
+"    0 : Align to first argument, else 2 space indentation.
+"    1+: 2 space indentation, no alignment.
 " Defaults copied from: https://github.com/clojure-emacs/clojure-mode/blob/0e62583b5198f71856e4d7b80e1099789d47f2ed/clojure-mode.el#L1800-L1875
 call s:SConf('clojure_indent_rules', {
 \   'fn': 1, 'def': 1, 'defn': 1, 'bound-fn': 1, 'let': 1, 'binding': 1, 'defmethod': 1,

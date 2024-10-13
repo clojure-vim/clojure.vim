@@ -106,8 +106,8 @@ Control alignment of _new_ lines within Clojure multi-line strings and regular
 expressions with `clojure_indent_multiline_strings`.
 
 > [!NOTE]
-> Indenting with `=` will not alter the indentation within multi-line strings,
-> as this could break intentional formatting.
+> Indenting with <kbd>=</kbd> will not alter the indentation within multi-line
+> strings, as this could break intentional formatting.
 
 Pick from the following multi-line string indent styles:
 
@@ -136,8 +136,9 @@ regions, such as rainbow parenthesis plugins.)
 ## Insert-mode completion
 
 Very basic insert-mode completion of special forms and public vars from
-`clojure.core` is included in Clojure.vim.  Invoke it with `<C-x><C-o>` or
-`<C-x><C-u>`.
+`clojure.core` is included in Clojure.vim.  Invoke it with
+<kbd>Ctrl</kbd><kbd>x</kbd><kbd>Ctrl</kbd><kbd>o</kbd> or
+<kbd>Ctrl</kbd><kbd>x</kbd><kbd>Ctrl</kbd><kbd>u</kbd>.
 
 
 ## Contribute
