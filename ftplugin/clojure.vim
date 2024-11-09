@@ -67,7 +67,7 @@ endif
 " Filter files in the browse dialog
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
 	let b:browsefilter = "All Files\t*\n" .
-				\ "Clojure Files\t*.clj;*.cljc;*.cljs;*.cljx\n" .
+				\ "Clojure Files\t*.clj;*.cljc;*.cljs;*.cljx;*.bb;*.clj_kondo\n" .
 				\ "EDN Files\t*.edn\n" .
 				\ "Java Files\t*.java\n"
 	let b:undo_ftplugin .= ' | unlet! b:browsefilter'
