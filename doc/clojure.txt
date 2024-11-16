@@ -5,123 +5,116 @@ INTRODUCTION						*clojure-introduction*
 Clojure runtime files for Vim.
 
 
-CLOJURE					*ft-clojure-indent* *clojure-indent*
+CLOJURE					*ft-clojure-indent*  *clojure-indent*
 
 Clojure indentation differs somewhat from traditional Lisps, due in part to
 the use of square and curly brackets, and otherwise by community convention.
-These conventions are not universally followed, so the Clojure indent script
-offers a few configuration options.
-
-(If the current Vim does not include |searchpairpos()|, the indent script falls
-back to normal 'lisp' indenting, and the following options are ignored.)
+As these conventions are not universally followed, the Clojure indent script
+offers ways to adjust the indentation.
 
 
-							*g:clojure_maxlines*
+						*g:clojure_indent_style*
+						*b:clojure_indent_style*
 
-Sets maximum scan distance of `searchpairpos()`.  Larger values trade
-performance for correctness when dealing with very long forms.  A value of
-0 will scan without limits.  The default is 300.
+The `clojure_indent_style` config option controls the general indentation style
+to use.  Choose from several common presets:
+
+* `standard` (default):
+  Conventional Clojure indentation.  (Clojure Style Guide [1]) >
+
+	|(filter even?
+	|        [1 2 3])
+	|
+	|(filter
+	| even?
+	| [1 2 3])
+<
+* `traditional`:
+  Indent like traditional Lisps. >
+
+	|(filter even?
+	|        [1 2 3])
+	|
+	|(filter
+	|  even?
+	|  [1 2 3])
+<
+* `uniform`:
+  Indent uniformly to 2 spaces with no alignment (aka Tonsky indentation [2]).
+>
+	|(filter even?
+	|  [1 2 3])
+	|
+	|(filter
+	|  even?
+	|  [1 2 3])
+<
+[1]: https://guide.clojure.style/
+[2]: https://tonsky.me/blog/clojurefmt/
 
 
-						*g:clojure_fuzzy_indent*
+						*g:clojure_indent_rules*
+						*b:clojure_indent_rules*
+
+TODO: add this option and write this section.
+
+
 					*g:clojure_fuzzy_indent_patterns*
-					*g:clojure_fuzzy_indent_blacklist*
+					*b:clojure_fuzzy_indent_patterns*
 
-The 'lispwords' option is a list of comma-separated words that mark special
-forms whose subforms should be indented with two spaces.
+TODO: add this option and write this section.
 
-For example:
+
+					*g:clojure_indent_multiline_strings*
+					*b:clojure_indent_multiline_strings*
+
+Control alignment of new lines within Clojure multi-line strings and regular
+expressions with `clojure_indent_multiline_strings`.
+
+NOTE: indenting with |=| will not alter the indentation within multi-line
+strings, as this could break intentional formatting.
+
+Pick from the following multi-line string indent styles:
+
+* `standard` (default):
+  Align to the front of the `"` or `#"` delimiter.  Ideal for doc-strings.
 >
-	(defn bad []
-	      "Incorrect indentation")
-
-	(defn good []
-	  "Correct indentation")
+	|(def standard
+	|  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	|  eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 <
-If you would like to specify 'lispwords' with a |pattern| instead, you can use
-the fuzzy indent feature:
+* `pretty`:
+  Align to the back of the `"` or `#"` delimiter.
 >
-	" Default
-	let g:clojure_fuzzy_indent = 1
-	let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
-	let g:clojure_fuzzy_indent_blacklist =
-		\ ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
+	|(def pretty
+	|  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	|   eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 <
-|g:clojure_fuzzy_indent_patterns| and |g:clojure_fuzzy_indent_blacklist| are
-lists of patterns that will be matched against the unqualified symbol at the
-head of a list.  This means that a pattern like `"^foo"` will match all these
-candidates: `foobar`, `my.ns/foobar`, and `#'foobar`.
-
-Each candidate word is tested for special treatment in this order:
-
-	1. Return true if word is literally in 'lispwords'
-	2. Return false if word matches a pattern in
-	   |g:clojure_fuzzy_indent_blacklist|
-	3. Return true if word matches a pattern in
-	   |g:clojure_fuzzy_indent_patterns|
-	4. Return false and indent normally otherwise
-
-
-					*g:clojure_special_indent_words*
-
-Some forms in Clojure are indented such that every subform is indented by only
-two spaces, regardless of 'lispwords'.  If you have a custom construct that
-should be indented in this idiosyncratic fashion, you can add your symbols to
-the default list below.
+* `traditional`:
+  No indent, align to left edge of the file.
 >
-	" Default
-	let g:clojure_special_indent_words =
-	   \ 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
+	|(def traditional
+	|  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	|eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 <
 
-					*g:clojure_align_multiline_strings*
+						*clojure-indent-deprecations*
 
-Align subsequent lines in multi-line strings to the column after the opening
-quote, instead of the same column.
+As part of the Clojure indentation script rebuild, the following configuration
+options have been removed/replaced:
 
-For example:
->
-	(def default
-	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-	  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-	  enim ad minim veniam, quis nostrud exercitation ullamco laboris
-	  nisi ut aliquip ex ea commodo consequat.")
-
-	(def aligned
-	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-	   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-	   enim ad minim veniam, quis nostrud exercitation ullamco laboris
-	   nisi ut aliquip ex ea commodo consequat.")
-<
-
-						*g:clojure_align_subforms*
-
-By default, parenthesized compound forms that look like function calls and
-whose head subform is on its own line have subsequent subforms indented by
-two spaces relative to the opening paren:
->
-	(foo
-	  bar
-	  baz)
-<
-Setting this option to `1` changes this behaviour so that all subforms are
-aligned to the same column, emulating the default behaviour of
-clojure-mode.el:
->
-	(foo
-	 bar
-	 baz)
-<
-
-						  *g:clojure_cljfmt_compat*
-
-Try to be (more) compatible with `cljfmt` Clojure code formatting tool. Turns
-on single space indenting for forms starting with `:keywords`, `'symbols`,
-`#'variables` and `@dereferences` (it affects, for instance, `(:require ...)`
-clause in Clojure `ns` form).
+* *g:clojure_maxlines*                -> none
+* *g:clojure_cljfmt_compat*           -> |g:clojure_indent_style|
+* *g:clojure_align_subforms*          -> |g:clojure_indent_style|
+* *g:clojure_align_multiline_strings* -> |g:clojure_indent_multiline_strings|
+* *g:clojure_special_indent_words*    -> |g:clojure_indent_rules|
+* *g:clojure_fuzzy_indent*            -> none
+* *g:clojure_fuzzy_indent_blacklist*  -> none
+* |'lispwords'|                       -> |g:clojure_indent_rules|
 
 
 CLOJURE							*ft-clojure-syntax*
+
 
 						*g:clojure_syntax_keywords*
 
@@ -170,22 +163,19 @@ ABOUT							*clojure-about*
 This document and associated runtime files are maintained at:
 https://github.com/clojure-vim/clojure.vim
 
-Distributed under the Vim license. See |license|.
+Maintainer: Alex Vear <alex@vear.uk>
 
-syntax/clojure.vim
-
-	Copyright 2007-2008 (c) Toralf Wittner <toralf.wittner@gmail.com>
-	Copyright 2008-2012 (c) Meikel Brandmeyer <mb@kotka.de>
-
+syntax/clojure.vim,
 ftdetect/clojure.vim,
 ftplugin/clojure.vim,
 indent/clojure.vim
 
+	Distributed under the Vim license.  See |license|.
+
+	Copyright 2007-2008 (c) Toralf Wittner <toralf.wittner@gmail.com>
 	Copyright 2008-2012 (c) Meikel Brandmeyer <mb@kotka.de>
-
-Modified and relicensed under the Vim License for distribution with Vim:
-
-	Copyright 2013-2014 (c) Sung Pae <self@sungpae.com>
+	Copyright 2013-2018 (c) Sung Pae <self@sungpae.com>
+	Copyright 2020–2024 (c) The clojure-vim contributors
 
 Last Change: %%RELEASE_DATE%%
 

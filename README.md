@@ -1,20 +1,13 @@
 # Clojure.vim
 
-[Clojure][] syntax highlighting for Vim and Neovim, including:
+**Configurable [Clojure][] syntax highlighting, indentation (and more) for Vim and Neovim!**
 
-- [Augmentable](#syntax-options) syntax highlighting.
-- [Configurable](#indent-options) indentation.
-- Basic insert-mode completion of special forms and public vars in
-  `clojure.core`.  (Invoke with `<C-x><C-o>` or `<C-x><C-u>`.)
+> [!TIP]
+> This plugin comes packaged with Vim and Neovim.  However if you would like to
+> always use the latest version, you can install this plugin like you would any
+> other.
 
-
-## Installation
-
-These files are included in both Vim and Neovim.  However if you would like the
-latest changes just install this repository like any other plugin.
-
-Make sure that the following options are set in your vimrc so that all features
-are enabled:
+Make sure your vimrc contains the following options to enable all features:
 
 ```vim
 syntax on
@@ -22,21 +15,9 @@ filetype plugin indent on
 ```
 
 
-## Configuration
+## Syntax highlighting
 
-### Folding
-
-Setting `g:clojure_fold` to `1` will enable the folding of Clojure code.  Any
-list, vector or map that extends over more than one line can be folded using
-the standard Vim fold commands.
-
-(Note that this option will not work with scripts that redefine the bracket
-regions, such as rainbow parenphesis plugins.)
-
-
-### Syntax options
-
-#### `g:clojure_syntax_keywords`
+### `g:clojure_syntax_keywords`
 
 Syntax highlighting of public vars in `clojure.core` is provided by default,
 but additional symbols can be highlighted by adding them to the
@@ -60,127 +41,104 @@ will not be highlighted by default.  This is useful for namespaces that have
 set `(:refer-clojure :only [])`.
 
 
-#### `g:clojure_discard_macro`
+### `g:clojure_discard_macro`
 
 Set this variable to `1` to enable highlighting of the
 "[discard reader macro](https://clojure.org/guides/weird_characters#_discard)".
 Due to current limitations in Vim's syntax rules, this option won't highlight
-stacked discard macros (e.g. `#_#_`).  This inconsitency is why this option is
+stacked discard macros (e.g. `#_#_`).  This inconsistency is why this option is
 disabled by default.
 
 
-### Indent options
+## Indentation
 
-Clojure indentation differs somewhat from traditional Lisps, due in part to
-the use of square and curly brackets, and otherwise by community convention.
-These conventions are not universally followed, so the Clojure indent script
-offers a few configuration options.
+Clojure indentation differs somewhat from traditional Lisps, due in part to the
+use of square and curly brackets, and otherwise by community convention.  As
+these conventions are not universally followed, the Clojure indent script
+offers ways to adjust the indentation.
 
-(If the current Vim does not include `searchpairpos()`, the indent script falls
-back to normal `'lisp'` indenting, and the following options are ignored.)
+> [!WARNING]
+> The indentation code has recently been rebuilt which included the
+> removal/replacement of the following configuration options:
+>
+> | Config option                     | Replacement (if any)               |
+> |-----------------------------------|------------------------------------|
+> | `clojure_maxlines`                |                                    |
+> | `clojure_cljfmt_compat`           | `clojure_indent_style`             |
+> | `clojure_align_subforms`          | `clojure_indent_style`             |
+> | `clojure_align_multiline_strings` | `clojure_indent_multiline_strings` |
+> | `clojure_fuzzy_indent`            |                                    |
+> | `clojure_fuzzy_indent_blacklist`  |                                    |
+> | `clojure_special_indent_words`    | `clojure_indent_rules`             |
+> | `'lispwords'`                     | `clojure_indent_rules`             |
 
 
-#### `g:clojure_maxlines`
+### Indentation style
 
-Sets maximum scan distance of `searchpairpos()`.  Larger values trade
-performance for correctness when dealing with very long forms.  A value of
-0 will scan without limits.  The default is 300.
+The `clojure_indent_style` config option controls the general indentation style
+to use.  Choose from several common presets:
 
-
-#### `g:clojure_fuzzy_indent`, `g:clojure_fuzzy_indent_patterns`, `g:clojure_fuzzy_indent_blacklist`
-
-The `'lispwords'` option is a list of comma-separated words that mark special
-forms whose subforms should be indented with two spaces.
-
-For example:
-
-```clojure
-(defn bad []
-      "Incorrect indentation")
-
-(defn good []
-  "Correct indentation")
-```
-
-If you would like to specify `'lispwords'` with a pattern instead, you can use
-the fuzzy indent feature:
+| Value | Default | Description |
+|-------|---------|-------------|
+| `standard` | ✅ | Conventional Clojure indentation.  ([_Clojure Style Guide_](https://guide.clojure.style/).) |
+| `traditional` | | Indent like traditional Lisps.  (Earlier versions of Clojure.vim indented like this.) |
+| `uniform`     | | Indent uniformly to 2 spaces with no alignment (a.k.a. [_Tonsky_ indentation](https://tonsky.me/blog/clojurefmt/)). |
 
 ```vim
-" Default
-let g:clojure_fuzzy_indent = 1
-let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
-let g:clojure_fuzzy_indent_blacklist = ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
+let g:clojure_indent_style = 'uniform'      " Set the default...
+let b:clojure_indent_style = 'traditional'  " ...or override it per-buffer.
 ```
 
-`g:clojure_fuzzy_indent_patterns` and `g:clojure_fuzzy_indent_blacklist` are
-lists of patterns that will be matched against the unqualified symbol at the
-head of a list.  This means that a pattern like `"^foo"` will match all these
-candidates: `foobar`, `my.ns/foobar`, and `#'foobar`.
 
-Each candidate word is tested for special treatment in this order:
+### Indentation rules
 
-1. Return true if word is literally in `'lispwords'`
-2. Return false if word matches a pattern in `g:clojure_fuzzy_indent_blacklist`
-3. Return true if word matches a pattern in `g:clojure_fuzzy_indent_patterns`
-4. Return false and indent normally otherwise
+> [!NOTE]
+> These options are ignored if an indentation style of "uniform" is selected.
+
+<!-- TODO: write this section. -->
+
+`clojure_indent_rules` & `clojure_fuzzy_indent_patterns`
 
 
-#### `g:clojure_special_indent_words`
+### Multi-line strings
 
-Some forms in Clojure are indented such that every subform is indented by only
-two spaces, regardless of `'lispwords'`.  If you have a custom construct that
-should be indented in this idiosyncratic fashion, you can add your symbols to
-the default list below.
+Control alignment of _new_ lines within Clojure multi-line strings and regular
+expressions with `clojure_indent_multiline_strings`.
+
+> [!NOTE]
+> Indenting with <kbd>=</kbd> will not alter the indentation within multi-line
+> strings, as this could break intentional formatting.
+
+Pick from the following multi-line string indent styles:
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `standard` | ✅ | Align to the _front_ of the `"` or `#"` delimiter.  Ideal for doc-strings. |
+| `pretty`      | | Align to the _back_ of the `"` or `#"` delimiter. |
+| `traditional` | | No indent: align to left edge of file. |
 
 ```vim
-" Default
-let g:clojure_special_indent_words = 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
+let g:clojure_indent_multiline_strings = 'pretty'       " Set the default...
+let b:clojure_indent_multiline_strings = 'traditional'  " ...or override it per-buffer.
 ```
 
 
-#### `g:clojure_align_multiline_strings`
+## Code folding
 
-Align subsequent lines in multi-line strings to the column after the opening
-quote, instead of the same column.
+Setting `g:clojure_fold` to `1` will enable the folding of Clojure code.  Any
+list, vector or map that extends over more than one line can be folded using
+the standard Vim fold commands.
 
-For example:
-
-```clojure
-(def default
-  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-  enim ad minim veniam, quis nostrud exercitation ullamco laboris
-  nisi ut aliquip ex ea commodo consequat.")
-
-(def aligned
-  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-   enim ad minim veniam, quis nostrud exercitation ullamco laboris
-   nisi ut aliquip ex ea commodo consequat.")
-```
+(Note that this option will not work with scripts that redefine the bracket
+regions, such as rainbow parenthesis plugins.)
 
 
-#### `g:clojure_align_subforms`
+## Insert-mode completion
 
-By default, parenthesized compound forms that look like function calls and
-whose head subform is on its own line have subsequent subforms indented by
-two spaces relative to the opening paren:
-
-```clojure
-(foo
-  bar
-  baz)
-```
-
-Setting this option to `1` changes this behaviour so that all subforms are
-aligned to the same column, emulating the default behaviour of
-[clojure-mode.el](https://github.com/clojure-emacs/clojure-mode):
-
-```clojure
-(foo
- bar
- baz)
-```
+Very basic insert-mode completion of special forms and public vars from
+`clojure.core` is included in Clojure.vim.  Invoke it with
+<kbd>Ctrl</kbd><kbd>x</kbd><kbd>Ctrl</kbd><kbd>o</kbd> or
+<kbd>Ctrl</kbd><kbd>x</kbd><kbd>Ctrl</kbd><kbd>u</kbd>.
 
 
 ## Contribute
@@ -195,18 +153,15 @@ Pull requests are welcome!  Make sure to read the
 _Vim-clojure-static_ was created by [Sung Pae](https://github.com/guns).  The
 original copies of the packaged runtime files came from
 [Meikel Brandmeyer](http://kotka.de/)'s [VimClojure][] project with permission.
-
-Thanks to [Tim Pope](https://github.com/tpope/) for advice in
-[#vim](https://www.vi-improved.org/).
+Thanks to [Tim Pope](https://github.com/tpope/) for advice in `#vim` on IRC.
 
 
 ## License
 
-Clojure.vim is licensed under the [Vim
-License](http://vimdoc.sourceforge.net/htmldoc/uganda.html#license) for
-distribution with Vim.
+Clojure.vim is licensed under the [Vim License](http://vimdoc.sourceforge.net/htmldoc/uganda.html#license)
+for distribution with Vim.
 
-- Copyright © 2020–2021, The clojure-vim contributors.
+- Copyright © 2020–2024, The clojure-vim contributors.
 - Copyright © 2013–2018, Sung Pae.
 - Copyright © 2008–2012, Meikel Brandmeyer.
 - Copyright © 2007–2008, Toralf Wittner.

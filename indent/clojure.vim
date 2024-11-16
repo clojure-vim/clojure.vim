@@ -1,438 +1,307 @@
 " Vim indent file
-" Language:           Clojure
-" Maintainer:         Alex Vear <alex@vear.uk>
-" Former Maintainers: Sung Pae <self@sungpae.com>
-"                     Meikel Brandmeyer <mb@kotka.de>
-" URL:                https://github.com/clojure-vim/clojure.vim
-" License:            Vim (see :h license)
-" Last Change:        %%RELEASE_DATE%%
+" Language:            Clojure
+" Maintainer:          Alex Vear <alex@vear.uk>
+" Former Maintainers:  Sung Pae <self@sungpae.com>
+"                      Meikel Brandmeyer <mb@kotka.de>
+" Last Change:         %%RELEASE_DATE%%
+" License:             Vim (see :h license)
+" Repository:          https://github.com/clojure-vim/clojure.vim
 
-if exists("b:did_indent")
-	finish
-endif
+" NOTE: To debug this code, make sure to "set debug+=msg" otherwise errors
+" will occur silently.
+
+if exists("b:did_indent") | finish | endif
 let b:did_indent = 1
 
-let s:save_cpo = &cpo
-set cpo&vim
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
-let b:undo_indent = 'setlocal autoindent< smartindent< expandtab< softtabstop< shiftwidth< indentexpr< indentkeys<'
-
-setlocal noautoindent nosmartindent
+setlocal noautoindent nosmartindent nolisp indentkeys=!,o,O
 setlocal softtabstop=2 shiftwidth=2 expandtab
-setlocal indentkeys=!,o,O
+let b:undo_indent = 'setlocal autoindent< smartindent< expandtab< softtabstop< shiftwidth< indentexpr< indentkeys< lisp<'
 
-if exists("*searchpairpos")
+" Set a new configuration option with a default value.  Assigns a script-local
+" version too, to be used as a default fallback if the global was "unlet".
+function! s:SConf(name, default) abort
+	let [s, g] = ['s:' . a:name, 'g:' . a:name]
+	exec 'let' 's:' . a:name '=' string(a:default)
+	if ! exists(g) | exec 'let' g '=' s | endif
+endfunction
 
-	if !exists('g:clojure_maxlines')
-		let g:clojure_maxlines = 300
-	endif
+" Get the value of a configuration option with a possible fallback.
+function! s:Conf(opt, fallback) abort
+	return get(b:, a:opt, get(g:, a:opt, a:fallback))
+endfunction
 
-	if !exists('g:clojure_fuzzy_indent')
-		let g:clojure_fuzzy_indent = 1
-	endif
+call s:SConf('clojure_indent_style', 'standard')
+call s:SConf('clojure_indent_multiline_strings', 'standard')
+call s:SConf('clojure_fuzzy_indent_patterns', [
+\   '\m^def', '\m^let', '\m^with-\%(meta\|in-str\|out-str\|loading-context\)\@!'
+\ ])
 
-	if !exists('g:clojure_fuzzy_indent_patterns')
-		let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
-	endif
+" FIXME: reader conditional indentation?
 
-	if !exists('g:clojure_fuzzy_indent_blacklist')
-		let g:clojure_fuzzy_indent_blacklist = ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
-	endif
+" TODO: explain the different numbers.  The "indent_style" option can override "0"
+"   -1 : Not in dictionary, follow defaults.
+"    0 : Align to first argument, else 2 space indentation.
+"    1+: 2 space indentation, no alignment.
+" Defaults copied from: https://github.com/clojure-emacs/clojure-mode/blob/0e62583b5198f71856e4d7b80e1099789d47f2ed/clojure-mode.el#L1800-L1875
+call s:SConf('clojure_indent_rules', {
+\   'fn': 1, 'def': 1, 'defn': 1, 'bound-fn': 1, 'let': 1, 'binding': 1, 'defmethod': 1,
+\   'if': 1, 'if-not': 1, 'if-some': 1, 'if-let': 1,
+\   'when': 1, 'when-not': 1, 'when-some': 1, 'when-let': 1, 'when-first': 1,
+\   'case': 1, 'cond': 0, 'cond->': 1, 'cond->>': 1, 'condp': 2,
+\   'while': 1, 'loop': 1, 'for': 1, 'doseq': 1, 'dotimes': 1,
+\   'ns': 1, 'do': 0, 'doto': 1, 'comment': 0, 'as->': 2,
+\   'delay': 0, 'future': 0, 'locking': 1, 'try': 0, 'catch': 2, 'finally': 0,
+\   'reify': 1, 'proxy': 2, 'defrecord': 2, 'defprotocol': 1, 'definterface': 1,
+\   'extend': 1, 'extend-protocol': 1, 'extend-type': 1,
+"\  [letfn] [1 [[:defn]] nil]  [deftype defrecord proxy] [2 nil nil [:defn]]
+"\  [defprotocol definterface extend-protocol extend-type] [1 [:defn]]
+"\  ClojureScript
+\   'this-as': 1, 'specify': 1, 'specify!': 1,
+"\  clojure.test
+\   'deftest': 1, 'testing': 1, 'use-fixtures': 1, 'are': 2,
+"\  clojure.spec.alpha
+\   'fdef': 1,
+"\  core.async
+\   'alt!': 0, 'alt!!': 0, 'go': 0, 'go-loop': 1, 'thread': 0,
+"\  core.logic
+\   'run': 1, 'run*': 1, 'fresh': 1
+\ })
 
-	if !exists('g:clojure_special_indent_words')
-		let g:clojure_special_indent_words = 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
-	endif
+" Returns "1" if position "i_char" in "line_str" is preceded by an odd number
+" of backslash characters (i.e. escaped).
+function! s:IsEscaped(line_str, i_char)
+	return ! strlen(trim(a:line_str[: a:i_char - 1], '\', 2)) % 2
+endfunction
 
-	if !exists('g:clojure_align_multiline_strings')
-		let g:clojure_align_multiline_strings = 0
-	endif
+" Used during list function indentation.  Returns the position of the first
+" operand in the list on the first line of the form at "pos".
+function! s:FirstFnArgPos(pos)
+	" TODO: ignore comments and handle escaped characters!
+	let lnr = a:pos[0]
+	let s:in_form_current_form = a:pos
+	call cursor(lnr, a:pos[1] + 1)
+	return searchpos('\m[ ,]\+\zs', 'z', lnr, 0, function('<SID>IsSubForm'))
+endfunction
 
-	if !exists('g:clojure_align_subforms')
-		let g:clojure_align_subforms = 0
-	endif
+" Used by "s:FirstFnArgPos" function to skip over subforms as the first value
+" in a list form.
+function! s:IsSubForm()
+	let pos = searchpairpos('\m[([{"]', '', '\m[)\]}"]', 'b')
+	return pos != [0, 0] && pos != s:in_form_current_form
+endfunction
 
-	if !exists('g:clojure_cljfmt_compat')
-		let g:clojure_cljfmt_compat = 0
-	endif
+" Converts a cursor position into a characterwise cursor column position (to
+" handle multibyte characters).
+function! s:PosToCharCol(pos)
+	call cursor(a:pos) | return getcursorcharpos()[2]
+endfunction
 
-	function! s:syn_id_name()
-		return synIDattr(synID(line("."), col("."), 0), "name")
-	endfunction
+" Repeatedly search for indentation significant Clojure tokens on a given line
+" (in reverse order) building up a list of tokens and their positions.
+" Ignores escaped tokens.  Does not care about strings, which is handled by
+" "s:InsideForm".
+function! s:TokeniseLine(line_num)
+	let tokens = []
+	let ln = getline(a:line_num)
+	let possible_comment = 0
 
-	function! s:ignored_region()
-		return s:syn_id_name() =~? '\vstring|regex|comment|character'
-	endfunction
+	while 1
+		" We perform searches within the buffer (and move the cusor)
+		" for better performance than looping char by char in a line.
+		let token_pos = searchpos('\m[()[\]{};"]', 'bW', a:line_num)
 
-	function! s:current_char()
-		return getline('.')[col('.')-1]
-	endfunction
+		" No more matches, exit loop.
+		if token_pos == [0, 0] | break | endif
 
-	function! s:current_word()
-		return getline('.')[col('.')-1 : searchpos('\v>', 'n', line('.'))[1]-2]
-	endfunction
+		let t_idx = token_pos[1] - 1
 
-	function! s:is_paren()
-		return s:current_char() =~# '\v[\(\)\[\]\{\}]' && !s:ignored_region()
-	endfunction
+		" Escaped character, ignore.
+		if s:IsEscaped(ln, t_idx) | continue | endif
 
-	" Returns 1 if string matches a pattern in 'patterns', which should be
-	" a list of patterns.
-	function! s:match_one(patterns, string)
-		for pat in a:patterns
-			if a:string =~# pat | return 1 | endif
+		" Add token to the list.
+		let token = ln[t_idx]
+		call add(tokens, [token, token_pos])
+
+		" Early "possible comment" detection to reduce copying later.
+		if token ==# ';' | let possible_comment = 1 | endif
+	endwhile
+
+	return [tokens, possible_comment]
+endfunction
+
+let s:pairs = {'(': ')', '[': ']', '{': '}'}
+
+" This procedure is kind of like a really lightweight Clojure reader that
+" analyses from the inside out.  It looks at the lines above the current line,
+" tokenises them (from right to left), and performs reductions to find the
+" parent form and where it is.
+function! s:InsideForm(lnum)
+	" Reset cursor to first column of the line we wish to indent.
+	call cursor(a:lnum, 1)
+
+	" Token list looks like this: "[[delim, [line, col]], ...]".
+	let tokens = []
+	let first_string_pos = []
+	let in_string = 0
+
+	let lnum = a:lnum - 1
+	while lnum > 0
+		let [line_tokens, possible_comment] = s:TokeniseLine(lnum)
+
+		" In case of comments, copy "tokens" so we can undo alterations.
+		if possible_comment | let prev_tokens = copy(tokens) | endif
+
+		" Reduce tokens from line "lnum" into "tokens".
+		for tk in line_tokens
+			if tk[0] ==# '"'
+				if in_string
+					let in_string = 0
+					call remove(tokens, -1)
+				else
+					let in_string = 1
+					call add(tokens, tk)
+
+					" Track the first string delimiter we
+					" see, as we may need it later for
+					" multi-line strings/regexps.
+					if first_string_pos == []
+						let first_string_pos = tk
+					endif
+				endif
+			elseif in_string  " In string: ignore other tokens.
+			elseif possible_comment && tk[0] ==# ';'
+				" Comment: undo previous token applications on this line.
+				let tokens = copy(prev_tokens)
+			elseif ! empty(tokens) && get(s:pairs, tk[0], '') ==# tokens[-1][0]
+				" Matching pair: drop the last item in tokens.
+				call remove(tokens, -1)
+			else
+				" No match: append to token list.
+				call add(tokens, tk)
+			endif
 		endfor
-	endfunction
 
-	function! s:match_pairs(open, close, stopat)
-		" Stop only on vector and map [ resp. {. Ignore the ones in strings and
-		" comments.
-		if a:stopat == 0 && g:clojure_maxlines > 0
-			let stopat = max([line(".") - g:clojure_maxlines, 0])
-		else
-			let stopat = a:stopat
+		if ! empty(tokens) && has_key(s:pairs, tokens[0][0]) && ! in_string
+			return tokens[0]  " Match found!
 		endif
 
-		let pos = searchpairpos(a:open, '', a:close, 'bWn', "!s:is_paren()", stopat)
-		return [pos[0], col(pos)]
-	endfunction
+		let lnum -= 1
+	endwhile
 
-	function! s:clojure_check_for_string_worker()
-		" Check whether there is the last character of the previous line is
-		" highlighted as a string. If so, we check whether it's a ". In this
-		" case we have to check also the previous character. The " might be the
-		" closing one. In case the we are still in the string, we search for the
-		" opening ". If this is not found we take the indent of the line.
-		let nb = prevnonblank(v:lnum - 1)
+	" TODO: can this conditional be simplified?
+	if (in_string && first_string_pos != []) || (! empty(tokens) && tokens[0][0] ==# '"')
+		" String was not closed, must have been in a multi-line string or regex.
+		return first_string_pos
+	endif
 
-		if nb == 0
-			return -1
+	return ['^', [0, 0]]  " Default to top-level.
+endfunction
+
+" Returns "1" when the "=" operator is currently active, else "0".
+function! s:EqualsOperatorInEffect()
+	return exists('*state') ? v:operator ==# '=' && state('o') ==# 'o' : 0
+endfunction
+
+function! s:StringIndent(delim_pos)
+	" Mimic multi-line string indentation behaviour in VS Code and Emacs.
+	let m = mode()
+	if m ==# 'i' || (m ==# 'n' && ! s:EqualsOperatorInEffect())
+		" If in insert mode, or normal mode but "=" is not in effect.
+		let alignment = s:Conf('clojure_indent_multiline_strings', s:clojure_indent_multiline_strings)
+		if     alignment ==# 'traditional' | return 0
+		elseif alignment ==# 'pretty'      | return s:PosToCharCol(a:delim_pos)
+		else                " standard
+			let col = a:delim_pos[1]
+			let is_regex = col > 1 && getline(a:delim_pos[0])[col - 2] ==# '#'
+			return s:PosToCharCol(a:delim_pos) - (is_regex ? 2 : 1)
 		endif
+	else | return -1  " Keep existing indent.
+	endif
+endfunction
 
-		call cursor(nb, 0)
-		call cursor(0, col("$") - 1)
-		if s:syn_id_name() !~? "string"
-			return -1
-		endif
+function! s:ListIndent(delim_pos)
+	" TODO: extend "s:InsideForm" to provide information about the
+	" subforms being formatted to avoid second parsing step.
 
-		" This will not work for a " in the first column...
-		if s:current_char() == '"'
-			call cursor(0, col("$") - 2)
-			if s:syn_id_name() !~? "string"
-				return -1
-			endif
-			if s:current_char() != '\'
-				return -1
-			endif
-			call cursor(0, col("$") - 1)
-		endif
+	let indent_style = s:Conf('clojure_indent_style', s:clojure_indent_style)
+	let base_indent = s:PosToCharCol(a:delim_pos)
 
-		let p = searchpos('\(^\|[^\\]\)\zs"', 'bW')
+	" Uniform indentation: just indent by 2 spaces.
+	if indent_style ==# 'uniform' | return base_indent + 1 | endif
 
-		if p != [0, 0]
-			return p[1] - 1
-		endif
+	let ln = getline(a:delim_pos[0])
+	let ln_content = ln[a:delim_pos[1]:]
 
-		return indent(".")
-	endfunction
+	" 1. Macro/rule indentation
+	"    if starts with a symbol, extract it.
+	"      - Split namespace off symbol and #'/' syntax.
+	"      - Check against pattern rules and apply indent on match.
+	"      - Look up in rules table and apply indent on match.
+	"    else: not found, go to 2.
+	"    TODO: handle complex indentation (e.g. letfn).  Skip if "traditional" style was chosen?
 
-	function! s:check_for_string()
-		let pos = getpos('.')
-		try
-			let val = s:clojure_check_for_string_worker()
-		finally
-			call setpos('.', pos)
-		endtry
-		return val
-	endfunction
+	" TODO: simplify this.
+	let syms = split(ln_content, '[[:space:],;()\[\]{}@\\"^~`]', 1)
+	let sym_match = -1
 
-	function! s:strip_namespace_and_macro_chars(word)
-		return substitute(a:word, "\\v%(.*/|[#'`~@^,]*)(.*)", '\1', '')
-	endfunction
-
-	function! s:clojure_is_method_special_case_worker(position)
-		" Find the next enclosing form.
-		call search('\S', 'Wb')
-
-		" Special case: we are at a '(('.
-		if s:current_char() == '('
-			return 0
-		endif
-		call cursor(a:position)
-
-		let next_paren = s:match_pairs('(', ')', 0)
-
-		" Special case: we are now at toplevel.
-		if next_paren == [0, 0]
-			return 0
-		endif
-		call cursor(next_paren)
-
-		call search('\S', 'W')
-		let w = s:strip_namespace_and_macro_chars(s:current_word())
-
-		if g:clojure_special_indent_words =~# '\V\<' . w . '\>'
-
-			" `letfn` is a special-special-case.
-			if w ==# 'letfn'
-				" Earlier code left the cursor at:
-				"     (letfn [...] ...)
-				"      ^
-
-				" Search and get coordinates of first `[`
-				"     (letfn [...] ...)
-				"            ^
-				call search('\[', 'W')
-				let pos = getcurpos()
-				let letfn_bracket = [pos[1], pos[2]]
-
-				" Move cursor to start of the form this function was
-				" initially called on.  Grab the coordinates of the
-				" closest outer `[`.
-				call cursor(a:position)
-				let outer_bracket = s:match_pairs('\[', '\]', 0)
-
-				" If the located square brackets are not the same,
-				" don't use special-case formatting.
-				if outer_bracket != letfn_bracket
-					return 0
-				endif
+	if ! empty(syms)
+		let sym = syms[0]
+		if sym =~# '\v^%([a-zA-Z!$&*_+=|<>?-]|[^\x00-\x7F])'
+			" TODO: handle namespaced and non-namespaced variants.
+			if sym =~# '\m./.'
+				let [_namespace, name] = split(sym, '\m/')
 			endif
 
-			return 1
+			" TODO: replace `clojure_fuzzy_indent_patterns` with `clojure_indent_patterns`?
+			for pat in s:Conf('clojure_fuzzy_indent_patterns', [])
+				if sym =~# pat | return base_indent + 1 | endif
+			endfor
+
+			let rules = s:Conf('clojure_indent_rules', {})
+			let sym_match = get(rules, sym, -1)
+			" TODO: handle 2+ differently?
+			if sym_match > 0 | return base_indent + 1 | endif
 		endif
+	endif
 
-		return 0
-	endfunction
+	" 2. Function indentation
+	"    if first operand is on the same line?
+	"      - Indent subsequent lines to align with first operand.
+	"    else: indent 1 or 2 spaces.
+	let pos = s:FirstFnArgPos(a:delim_pos)
+	if pos != [0, 0] | return s:PosToCharCol(pos) - 1 | endif
 
-	function! s:is_method_special_case(position)
-		let pos = getpos('.')
-		try
-			let val = s:clojure_is_method_special_case_worker(a:position)
-		finally
-			call setpos('.', pos)
-		endtry
-		return val
-	endfunction
+	" Fallback indentation for operands.  When "clojure_indent_style" is
+	" "traditional", use 2 space indentation, else 1 space indentation.
+	" The "sym_match" check handles the case when "clojure_indent_rules"
+	" specified a value of "0" for "standard" style.
+	return base_indent + (indent_style ==# 'traditional' || sym_match == 0)
+endfunction
 
-	" Check if form is a reader conditional, that is, it is prefixed by #?
-	" or #?@
-	function! s:is_reader_conditional_special_case(position)
-		return getline(a:position[0])[a:position[1] - 3 : a:position[1] - 2] == "#?"
-			\|| getline(a:position[0])[a:position[1] - 4 : a:position[1] - 2] == "#?@"
-	endfunction
+" TODO: make this usable from other Clojure-like languages.
+function! s:ClojureIndent()
+	" Calculate and return indent to use based on the matching form.
+	let [form, pos] = s:InsideForm(v:lnum)
+	if     form ==# '^' | return 0  " At top-level, no indent.
+	elseif form ==# '(' | return s:ListIndent(pos)
+	elseif form ==# '[' | return s:PosToCharCol(pos)
+	elseif form ==# '{' | return s:PosToCharCol(pos)
+	elseif form ==# '"' | return s:StringIndent(pos)
+	else                | return -1  " Keep existing indent.
+	endif
+endfunction
 
-	" Returns 1 for opening brackets, -1 for _anything else_.
-	function! s:bracket_type(char)
-		return stridx('([{', a:char) > -1 ? 1 : -1
-	endfunction
-
-	" Returns: [opening-bracket-lnum, indent]
-	function! s:clojure_indent_pos()
-		" Get rid of special case.
-		if line(".") == 1
-			return [0, 0]
-		endif
-
-		" We have to apply some heuristics here to figure out, whether to use
-		" normal lisp indenting or not.
-		let i = s:check_for_string()
-		if i > -1
-			return [0, i + !!g:clojure_align_multiline_strings]
-		endif
-
-		call cursor(0, 1)
-
-		" Find the next enclosing [ or {. We can limit the second search
-		" to the line, where the [ was found. If no [ was there this is
-		" zero and we search for an enclosing {.
-		let paren = s:match_pairs('(', ')', 0)
-		let bracket = s:match_pairs('\[', '\]', paren[0])
-		let curly = s:match_pairs('{', '}', bracket[0])
-
-		" In case the curly brace is on a line later then the [ or - in
-		" case they are on the same line - in a higher column, we take the
-		" curly indent.
-		if curly[0] > bracket[0] || curly[1] > bracket[1]
-			if curly[0] > paren[0] || curly[1] > paren[1]
-				return curly
-			endif
-		endif
-
-		" If the curly was not chosen, we take the bracket indent - if
-		" there was one.
-		if bracket[0] > paren[0] || bracket[1] > paren[1]
-			return bracket
-		endif
-
-		" There are neither { nor [ nor (, ie. we are at the toplevel.
-		if paren == [0, 0]
-			return paren
-		endif
-
-		" Now we have to reimplement lispindent. This is surprisingly easy, as
-		" soon as one has access to syntax items.
-		"
-		" - Check whether we are in a special position after a word in
-		"   g:clojure_special_indent_words. These are special cases.
-		" - Get the next keyword after the (.
-		" - If its first character is also a (, we have another sexp and align
-		"   one column to the right of the unmatched (.
-		" - In case it is in lispwords, we indent the next line to the column of
-		"   the ( + sw.
-		" - If not, we check whether it is last word in the line. In that case
-		"   we again use ( + sw for indent.
-		" - In any other case we use the column of the end of the word + 2.
-		call cursor(paren)
-
-		if s:is_method_special_case(paren)
-			return [paren[0], paren[1] + &shiftwidth - 1]
-		endif
-
-		if s:is_reader_conditional_special_case(paren)
-			return paren
-		endif
-
-		" In case we are at the last character, we use the paren position.
-		if col("$") - 1 == paren[1]
-			return paren
-		endif
-
-		" In case after the paren is a whitespace, we search for the next word.
-		call cursor(0, col('.') + 1)
-		if s:current_char() == ' '
-			call search('\v\S', 'W')
-		endif
-
-		" If we moved to another line, there is no word after the (. We
-		" use the ( position for indent.
-		if line(".") > paren[0]
-			return paren
-		endif
-
-		" We still have to check, whether the keyword starts with a (, [ or {.
-		" In that case we use the ( position for indent.
-		let w = s:current_word()
-		if s:bracket_type(w[0]) == 1
-			return paren
-		endif
-
-		" If the keyword begins with #, check if it is an anonymous
-		" function or set, in which case we indent by the shiftwidth
-		" (minus one if g:clojure_align_subforms = 1), or if it is
-		" ignored, in which case we use the ( position for indent.
-		if w[0] == "#"
-			" TODO: Handle #=() and other rare reader invocations?
-			if w[1] == '(' || w[1] == '{'
-				return [paren[0], paren[1] + (g:clojure_align_subforms ? 0 : &shiftwidth - 1)]
-			elseif w[1] == '_'
-				return paren
-			elseif w[1] == "'" && g:clojure_cljfmt_compat
-				return paren
-			endif
-		endif
-
-		" Paren indent for keywords, symbols and derefs
-		if g:clojure_cljfmt_compat && w[0] =~# "[:@']"
-			return paren
-		endif
-
-		" Test words without namespace qualifiers and leading reader macro
-		" metacharacters.
-		"
-		" e.g. clojure.core/defn and #'defn should both indent like defn.
-		let ww = s:strip_namespace_and_macro_chars(w)
-
-		if &lispwords =~# '\V\<' . ww . '\>'
-			return [paren[0], paren[1] + &shiftwidth - 1]
-		endif
-
-		if g:clojure_fuzzy_indent
-			\ && !s:match_one(g:clojure_fuzzy_indent_blacklist, ww)
-			\ && s:match_one(g:clojure_fuzzy_indent_patterns, ww)
-			return [paren[0], paren[1] + &shiftwidth - 1]
-		endif
-
-		call search('\v\_s', 'cW')
-		call search('\v\S', 'W')
-		if paren[0] < line(".")
-			return [paren[0], paren[1] + (g:clojure_align_subforms ? 0 : &shiftwidth - 1)]
-		endif
-
-		call search('\v\S', 'bW')
-		return [line('.'), col('.') + 1]
-	endfunction
-
-	function! GetClojureIndent()
-		let lnum = line('.')
-		let orig_lnum = lnum
-		let orig_col = col('.')
-		let [opening_lnum, indent] = s:clojure_indent_pos()
-
-		" Account for multibyte characters
-		if opening_lnum > 0
-			let indent -= indent - virtcol([opening_lnum, indent])
-		endif
-
-		" Return if there are no previous lines to inherit from
-		if opening_lnum < 1 || opening_lnum >= lnum - 1
-			call cursor(orig_lnum, orig_col)
-			return indent
-		endif
-
-		let bracket_count = 0
-
-		" Take the indent of the first previous non-white line that is
-		" at the same sexp level. cf. src/misc1.c:get_lisp_indent()
-		while 1
-			let lnum = prevnonblank(lnum - 1)
-			let col = 1
-
-			if lnum <= opening_lnum
-				break
-			endif
-
-			call cursor(lnum, col)
-
-			" Handle bracket counting edge case
-			if s:is_paren()
-				let bracket_count += s:bracket_type(s:current_char())
-			endif
-
-			while 1
-				if search('\v[(\[{}\])]', '', lnum) < 1
-					break
-				elseif !s:ignored_region()
-					let bracket_count += s:bracket_type(s:current_char())
-				endif
-			endwhile
-
-			if bracket_count == 0
-				" Check if this is part of a multiline string
-				call cursor(lnum, 1)
-				if s:syn_id_name() !~? '\vstring|regex'
-					call cursor(orig_lnum, orig_col)
-					return indent(lnum)
-				endif
-			endif
-		endwhile
-
-		call cursor(orig_lnum, orig_col)
-		return indent
-	endfunction
-
-	setlocal indentexpr=GetClojureIndent()
-
-else
-
-	" In case we have searchpairpos not available we fall back to
-	" normal lisp indenting.
-	setlocal indentexpr=
-	setlocal lisp
-	let b:undo_indent .= '| setlocal lisp<'
-
+" Connect indentation function.
+if exists('&lispoptions')
+	setlocal lisp lispoptions=expr:1
+	let b:undo_indent .= ' lispoptions<'
 endif
+setlocal indentexpr=s:ClojureIndent()
 
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet! s:save_cpo
 
 " vim:sts=8:sw=8:ts=8:noet
