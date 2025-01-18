@@ -73,24 +73,40 @@ call s:SConf('clojure_indent_rules', {
 " Returns "1" if position "i_char" in "line_str" is preceded by an odd number
 " of backslash characters (i.e. escaped).
 function! s:IsEscaped(line_str, i_char)
-	return ! strlen(trim(a:line_str[: a:i_char - 1], '\', 2)) % 2
+	let ln = a:line_str[: a:i_char - 1]
+	return (strlen(ln) - strlen(trim(ln, '\', 2))) % 2
+endfunction
+
+" Variation of "s:IsEscaped" which can be used within "search(pair)pos".
+function! s:SkipIfEscaped()
+	let pos = getcursorcharpos()
+	return s:IsEscaped(getline(pos[1]), pos[2] - 1)
 endfunction
 
 " Used during list function indentation.  Returns the position of the first
 " operand in the list on the first line of the form at "pos".
 function! s:FirstFnArgPos(pos)
-	" TODO: ignore comments and handle escaped characters!
-	let lnr = a:pos[0]
-	let s:in_form_current_form = a:pos
-	call cursor(lnr, a:pos[1] + 1)
-	return searchpos('\m[ ,]\+\zs', 'z', lnr, 0, function('<SID>IsSubForm'))
-endfunction
+	let [lnr, base_idx] = a:pos
+	let ln = getline(lnr)
+	call cursor([lnr, base_idx + 1])
 
-" Used by "s:FirstFnArgPos" function to skip over subforms as the first value
-" in a list form.
-function! s:IsSubForm()
-	let pos = searchpairpos('\m[([{"]', '', '\m[)\]}"]', 'b')
-	return pos != [0, 0] && pos != s:in_form_current_form
+	if ln[base_idx] =~# '["\\,[:space:]]' | return [0, 0] | endif
+
+	" Find first collection delimiter or char preceeding whitespace.
+	let pos = searchpos('\([{\[(]\|.[[:space:],]\)', 'cWz', lnr)
+	if pos == [0, 0] | return pos | endif
+
+	" If at collection delimiter, jump to end delimiter.
+	let ch = ln[pos[1] - 1]
+	if has_key(s:pairs, ch)
+		let pos = searchpairpos('\V' . ch, '', '\V' . get(s:pairs, ch), 'Wz', function('s:SkipIfEscaped'), lnr)
+		" If end not on same line: no arg.
+		if pos == [0, 0] | return pos | endif
+	endif
+
+	" Search forwards for first non-whitespace/comment char on line.
+	let pos = searchpos('[^[:space:],]', 'Wz', lnr)
+	return ln[pos[1] - 1] ==# ';' ? [0, 0] : pos
 endfunction
 
 " Converts a cursor position into a characterwise cursor column position (to

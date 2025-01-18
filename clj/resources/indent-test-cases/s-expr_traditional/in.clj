@@ -95,3 +95,46 @@ bar
     (import '(java.io File
                 IOException)
                 '(clojure.lang PersistentQueue))
+
+((if true + -) 1
+    3)
+
+((if true
++
+         -)
+            1
+3)
+
+(#'if (even? 1)
+  2
+          3)
+
+(#(foo) bar
+  biz)
+
+("foo bar" biz
+      baz)
+
+(~@foo
+            ~bar)
+
+(~@foo ~bar
+      biz)
+
+(o bar
+    biz)
+
+({foo \} bar biz} foo
+biz)
+
+('foo bar
+  'biz)
+
+('#{foo bar} 1
+      2)
+
+(foo ; bar
+       biz)
+
+'(\" \b
+    \c)
