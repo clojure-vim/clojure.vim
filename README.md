@@ -137,8 +137,8 @@ regions, such as rainbow parenthesis plugins.)
 
 Very basic insert-mode completion of special forms and public vars from
 `clojure.core` is included in Clojure.vim.  Invoke it with
-<kbd>Ctrl</kbd><kbd>x</kbd><kbd>Ctrl</kbd><kbd>o</kbd> or
-<kbd>Ctrl</kbd><kbd>x</kbd><kbd>Ctrl</kbd><kbd>u</kbd>.
+<kbd>Ctrl</kbd> <kbd>x</kbd> <kbd>Ctrl</kbd> <kbd>o</kbd> or
+<kbd>Ctrl</kbd> <kbd>x</kbd> <kbd>Ctrl</kbd> <kbd>u</kbd>.
 
 
 ## Contribute
