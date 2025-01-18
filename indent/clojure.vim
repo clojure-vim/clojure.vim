@@ -90,10 +90,10 @@ function! s:FirstFnArgPos(pos)
 	let ln = getline(lnr)
 	call cursor([lnr, base_idx + 1])
 
-	if ln[base_idx] =~# '["\\,[:space:]]' | return [0, 0] | endif
+	if ln[base_idx] =~# '\m["\\,[:space:]]' | return [0, 0] | endif
 
 	" Find first collection delimiter or char preceeding whitespace.
-	let pos = searchpos('\([{\[(]\|.[[:space:],]\)', 'cWz', lnr)
+	let pos = searchpos('\m\([{\[(]\|.[[:space:],]\)', 'cWz', lnr)
 	if pos == [0, 0] | return pos | endif
 
 	" If at collection delimiter, jump to end delimiter.
@@ -105,7 +105,7 @@ function! s:FirstFnArgPos(pos)
 	endif
 
 	" Search forwards for first non-whitespace/comment char on line.
-	let pos = searchpos('[^[:space:],]', 'Wz', lnr)
+	let pos = searchpos('\m[^[:space:],]', 'Wz', lnr)
 	return ln[pos[1] - 1] ==# ';' ? [0, 0] : pos
 endfunction
 
