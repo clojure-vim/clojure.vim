@@ -35,9 +35,7 @@ endfunction
 
 call s:SConf('clojure_indent_style', 'standard')
 call s:SConf('clojure_indent_multiline_strings', 'standard')
-call s:SConf('clojure_fuzzy_indent_patterns', [
-\   '\m^def', '\m^let', '\m^with-\%(meta\|in-str\|out-str\|loading-context\)\@!'
-\ ])
+call s:SConf('clojure_fuzzy_indent_patterns', ['\m^def', '\m^let', '\m^with-'])
 
 " FIXME: reader conditional indentation?
 
