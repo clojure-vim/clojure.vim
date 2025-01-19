@@ -297,8 +297,8 @@ function! s:ListIndent(delim_pos)
 	return base_indent + (indent_style ==# 'traditional' || sym_match == 0)
 endfunction
 
-" TODO: make this usable from other Clojure-like languages.
-function! s:ClojureIndent()
+" TODO: improve configurability for other Clojure-like languages.
+function! ClojureIndent()
 	" Calculate and return indent to use based on the matching form.
 	let [form, pos] = s:InsideForm(v:lnum)
 	if     form ==# '^' | return 0  " At top-level, no indent.
@@ -315,7 +315,7 @@ if exists('&lispoptions')
 	setlocal lisp lispoptions=expr:1
 	let b:undo_indent .= ' lispoptions<'
 endif
-setlocal indentexpr=s:ClojureIndent()
+setlocal indentexpr=ClojureIndent()
 
 let &cpoptions = s:save_cpo
 unlet! s:save_cpo
