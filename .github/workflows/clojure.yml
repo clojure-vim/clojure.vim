@@ -29,6 +29,8 @@ jobs:
       with:
         lein: 2.11.2
 
+    - run: sudo apt install -y neovim
+
     - name: Cache m2
       uses: actions/cache@v3
       env:

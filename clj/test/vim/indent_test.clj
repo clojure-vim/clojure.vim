@@ -31,9 +31,7 @@
        :actual        (slurp actual)
        :actual-file   actual})))
 
-;; TODO: do this parallisation more intelligently with agents.
-(deftest test-indent
-  "Runs all indentation tests in parallel"
+(defn- run-tests []
   (let [test-case-dir (io/file (io/resource "indent-test-cases"))
         test-cases    (get-test-cases test-case-dir)]
     (doseq [{:keys [test-case expected expected-file actual actual-file]}
@@ -41,3 +39,11 @@
       (testing test-case
         (is (= expected actual)
             (format "(not= \"%s\"\n      \"%s\")" expected-file actual-file))))))
+
+(deftest test-indent-vim
+  "Runs all indentation tests in parallel against Vim"
+  (run-tests))
+
+(deftest test-indent-nvim
+  "Runs all indentation tests in parallel against Neovim"
+  (binding [h/*vim* "nvim"] (run-tests)))
