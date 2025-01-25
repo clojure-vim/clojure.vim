@@ -29,7 +29,16 @@ jobs:
       with:
         lein: 2.11.2
 
-    - run: sudo apt install -y neovim
+    - name: Install Vim
+      uses: rhysd/action-setup-vim@v1
+      with:
+        version: stable
+
+    - name: Install Neovim
+      uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: stable
 
     - name: Cache m2
       uses: actions/cache@v3
