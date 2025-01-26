@@ -26,4 +26,4 @@ profile start $(echo "${PREFIX}-$(date +%s.%N).log")
 profile! file $(dirname "$0")/../../indent/clojure.vim
 "
 
-exec vim --clean -NXnu <(echo "$VIMRC") '+normal! gg=G' '+quitall!' "$1"
+exec vim --clean -ENXnu <(echo "$VIMRC") '+normal! gg=G' '+quitall!' "$1"

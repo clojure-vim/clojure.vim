@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Run Clojure.vim indentation tests
+# Run Clojure.vim indentation tests.
 
 # TODO: colour messages?
 
@@ -11,11 +11,8 @@ if [ "$EDITOR" != 'vim' ] && [ "$EDITOR" != 'nvim' ]; then
     exit 1
 fi
 
-if [ "$EDITOR" = 'vim' ]; then
-    editor_opts=('--not-a-term')
-else
-    editor_opts=()
-fi
+extra_opts=()
+[ "$EDITOR" = 'vim' ] && extra_opts+=('--not-a-term')
 
 PASSED=()
 FAILED=()
@@ -59,7 +56,7 @@ run_test_case() {
             test_cmd=('+normal! gg=G')
         fi
 
-        "$EDITOR" "${editor_opts[@]}" --clean -NXnu test-vimrc.vim "${test_cmd[@]}" '+xall!' -- "$actual_file"
+        "$EDITOR" "${extra_opts[@]}" --clean -EsNXnu test-vimrc.vim "${test_cmd[@]}" '+xall!' -- "$actual_file"
 
         diff --color=always -u "$expected_file" "$actual_file"
 
