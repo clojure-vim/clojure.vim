@@ -161,7 +161,7 @@ Thanks to [Tim Pope](https://github.com/tpope/) for advice in `#vim` on IRC.
 Clojure.vim is licensed under the [Vim License](http://vimdoc.sourceforge.net/htmldoc/uganda.html#license)
 for distribution with Vim.
 
-- Copyright © 2020–2024, The clojure-vim contributors.
+- Copyright © 2020–2025, The clojure-vim contributors.
 - Copyright © 2013–2018, Sung Pae.
 - Copyright © 2008–2012, Meikel Brandmeyer.
 - Copyright © 2007–2008, Toralf Wittner.

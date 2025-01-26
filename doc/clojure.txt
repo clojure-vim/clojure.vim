@@ -172,10 +172,10 @@ indent/clojure.vim
 
 	Distributed under the Vim license.  See |license|.
 
-	Copyright 2007-2008 (c) Toralf Wittner <toralf.wittner@gmail.com>
-	Copyright 2008-2012 (c) Meikel Brandmeyer <mb@kotka.de>
-	Copyright 2013-2018 (c) Sung Pae <self@sungpae.com>
-	Copyright 2020–2024 (c) The clojure-vim contributors
+	Copyright 2007–2008 (c) Toralf Wittner <toralf.wittner@gmail.com>
+	Copyright 2008–2012 (c) Meikel Brandmeyer <mb@kotka.de>
+	Copyright 2013–2018 (c) Sung Pae <self@sungpae.com>
+	Copyright 2020–2025 (c) The clojure-vim contributors
 
 Last Change: %%RELEASE_DATE%%
 
