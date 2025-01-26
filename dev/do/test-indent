@@ -18,14 +18,16 @@ mkdir -p "$tmp_base_dir"
 tmp_dir="$(mktemp --directory "$tmp_base_dir/XXXXXX")"
 test_case_dir='tests'
 
-test_pass() { PASSED+=("$1"); }
+test_pass() { PASSED+=("$1"); echo '::endgroup::'; }
 test_fail() {
     FAILED+=("$1")
-    echo "::error file=clj/indent-test/$test_case_dir/$1/out.clj::Failed indent test case."
+    echo '::endgroup::'
+    echo "::error file=dev/$test_case_dir/$1/out.clj::Failed indent test case."
 }
 test_skip() {
     SKIPPED+=("$1")
-    echo "::warning file=clj/indent-test/$test_case_dir/$1/out.clj::Skipped indent test case."
+    echo '::endgroup::'
+    echo "::warning file=dev/$test_case_dir/$1/out.clj::Skipped indent test case."
 }
 
 run_test_case() {
@@ -33,7 +35,7 @@ run_test_case() {
     in_file="$test_case_dir/$test_case/in.clj"
     expected_file="$test_case_dir/$test_case/out.clj"
 
-    echo "::group::$EDITOR -- $test_case"
+    echo "::group::$EDITOR: $test_case"
 
     if [ -f "$test_case_dir/$test_case/SKIP" ]; then
         test_skip "$test_case"
@@ -55,8 +57,6 @@ run_test_case() {
 
         [ $? -eq 0 ] && test_pass "$test_case" || test_fail "$test_case"
     fi
-
-    echo '::endgroup::'
 }
 
 for tcase in $test_case_dir/*/; do
@@ -64,4 +64,8 @@ for tcase in $test_case_dir/*/; do
 done
 
 echo "passed: ${#PASSED[@]}, failed: ${#FAILED[@]}, skipped: ${#SKIPPED[@]}"
-exit ${#FAILED[@]}
+
+# If none passed, or some failed, exit with error.
+if [ ${#PASSED[@]} -eq 0 ] || [ ${#FAILED[@]} -gt 0 ]; then
+    exit 1
+fi
