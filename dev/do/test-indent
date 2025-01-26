@@ -4,6 +4,8 @@
 
 # TODO: colour messages?
 
+pushd "$(dirname "$0")/.."
+
 if [ "$EDITOR" != 'vim' ] && [ "$EDITOR" != 'nvim' ]; then
     echo 'ERROR: Set the "EDITOR" environment variable to "vim" or "nvim" and run again.'
     exit 1
