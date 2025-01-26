@@ -1,8 +1,6 @@
 name: Syntax
 on:
-  push:
-    branches:
-    - master
+  push: { branches: [ master ] }
   pull_request:
   workflow_dispatch:
 
@@ -15,7 +13,7 @@ jobs:
       with:
         clj-kondo: latest
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Lint
       working-directory: ./clj
@@ -24,7 +22,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: DeLaGuardo/setup-clojure@7.0
       with:
         lein: 2.11.2
