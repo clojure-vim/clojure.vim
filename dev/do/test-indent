@@ -10,13 +10,14 @@ C_YELLOW='\033[1;33m'
 C_BLUE='\033[1;34m'
 C_RESET='\033[0m'
 
-log()    { printf "$*$C_RESET\n"; }
-logc()   { log "$1$2"; }
-succ()   { logc "$C_GREEN" "$*"; }
-warn()   { logc "$C_YELLOW" "$*"; }
-err()    { logc "$C_RED" "$*"; }
-info()   { logc "$C_BLUE" "$*"; }
-abort()  { err "ABORT: $*"; exit 1; }
+log()   { printf "$*$C_RESET\n"; }
+logc()  { log "$1$2"; }
+succ()  { logc "$C_GREEN" "$*"; }
+warn()  { logc "$C_YELLOW" "$*"; }
+err()   { logc "$C_RED" "$*"; }
+info()  { logc "$C_BLUE" "$*"; }
+abort() { err "ABORT: $*"; exit 1; }
+gh_do() { [ -n "$GITHUB_ACTIONS" ] && return 0 || return 1; }
 
 pushd "$(dirname "$0")/.."
 
@@ -39,11 +40,13 @@ test_case_dir='tests'
 test_pass() { PASSED+=("$1"); }
 test_fail() {
     FAILED+=("$1")
-    err "::error file=dev/$test_case_dir/$1/out.clj::Failed indent test case."
+    gh_do && echo "::error file=dev/$test_case_dir/$1/out.clj::Failed indent test case."
+    err "Failed \"$1\""
 }
 test_skip() {
     SKIPPED+=("$1")
-    warn "::warning file=dev/$test_case_dir/$1/out.clj::Skipped indent test case."
+    gh_do && echo "::warning file=dev/$test_case_dir/$1/out.clj::Skipped indent test case."
+    warn "Skipped \"$1\""
 }
 
 run_test_case() {
