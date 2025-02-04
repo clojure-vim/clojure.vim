@@ -40,13 +40,15 @@ test_case_dir='tests'
 test_pass() { PASSED+=("$1"); }
 test_fail() {
     FAILED+=("$1")
-    gh_do && echo "::error file=dev/$test_case_dir/$1/out.clj::Failed indent test case."
-    err "Failed \"$1\""
+    gh_do \
+        && echo "::error file=dev/$test_case_dir/$1/out.clj::Failed indent test case." \
+        || err "Failed \"$1\""
 }
 test_skip() {
     SKIPPED+=("$1")
-    gh_do && echo "::warning file=dev/$test_case_dir/$1/out.clj::Skipped indent test case."
-    warn "Skipped \"$1\""
+    gh_do \
+        && echo "::warning file=dev/$test_case_dir/$1/out.clj::Skipped indent test case." \
+        || warn "Skipped \"$1\""
 }
 
 run_test_case() {
