@@ -1,0 +1,28 @@
+name: Indent
+on:
+  push: { branches: [ master ] }
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  vim-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch source
+        uses: actions/checkout@v4
+      - name: Install Vim
+        uses: rhysd/action-setup-vim@v1
+        with: { version: stable }
+      - name: Run indentation tests
+        run: EDITOR=vim dev/do/test-indent
+
+  neovim-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch source
+        uses: actions/checkout@v4
+      - name: Install Neovim
+        uses: rhysd/action-setup-vim@v1
+        with: { neovim: true, version: stable }
+      - name: Run indentation tests
+        run: EDITOR=nvim dev/do/test-indent

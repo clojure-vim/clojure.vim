@@ -1,0 +1,43 @@
+name: Syntax
+on:
+  push: { branches: [ master ] }
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup clj-kondo
+      uses: DeLaGuardo/setup-clojure@7.0
+      with:
+        clj-kondo: latest
+
+    - uses: actions/checkout@v4
+
+    - name: Lint
+      working-directory: ./clj
+      run: clj-kondo --lint src --config '{:output {:pattern "::{{level}} file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: DeLaGuardo/setup-clojure@7.0
+      with:
+        lein: 2.11.2
+
+    - name: Cache m2
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-m2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/project.clj') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - run: lein test
+      working-directory: ./clj

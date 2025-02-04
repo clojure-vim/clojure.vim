@@ -1,3 +1,0 @@
-{:indent? false
- :extra-cmds ["normal! gg"
-              "exec \"normal! /α\\<CR>:call GetClojureIndent()\\<CR>rxj:call GetClojureIndent()\\<CR>ry\""]}

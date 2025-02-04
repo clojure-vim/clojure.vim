@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+# Run Clojure.vim indentation tests.
+
+# TODO: option to enable/disable (Lua / Vim9script) versions.
+
+C_GREEN='\033[1;32m'
+C_RED='\033[1;31m'
+C_YELLOW='\033[1;33m'
+C_BLUE='\033[1;34m'
+C_RESET='\033[0m'
+
+log()   { printf "$*$C_RESET\n"; }
+logc()  { log "$1$2"; }
+succ()  { logc "$C_GREEN" "$*"; }
+warn()  { logc "$C_YELLOW" "$*"; }
+err()   { logc "$C_RED" "$*"; }
+info()  { logc "$C_BLUE" "$*"; }
+abort() { err "ABORT: $*"; exit 1; }
+gh_do() { [ -n "$GITHUB_ACTIONS" ] && return 0 || return 1; }
+
+pushd "$(dirname "$0")/.."
+
+if [ "$EDITOR" != 'vim' ] && [ "$EDITOR" != 'nvim' ]; then
+    abort 'Set the "EDITOR" environment variable to "vim" or "nvim" and run again.'
+fi
+
+extra_opts=()
+[ "$EDITOR" = 'vim' ] && extra_opts+=('--not-a-term')
+
+PASSED=()
+FAILED=()
+SKIPPED=()
+
+tmp_base_dir='/tmp/clojure.vim/indent'
+mkdir -p "$tmp_base_dir"
+tmp_dir="$(mktemp --directory "$tmp_base_dir/XXXXXX")"
+test_case_dir='tests'
+
+test_pass() { PASSED+=("$1"); }
+test_fail() {
+    FAILED+=("$1")
+    gh_do \
+        && echo "::error file=dev/$test_case_dir/$1/out.clj::Failed indent test case." \
+        || err "Failed \"$1\""
+}
+test_skip() {
+    SKIPPED+=("$1")
+    gh_do \
+        && echo "::warning file=dev/$test_case_dir/$1/out.clj::Skipped indent test case." \
+        || warn "Skipped \"$1\""
+}
+
+run_test_case() {
+    test_case="$1"
+    in_file="$test_case_dir/$test_case/in.clj"
+    expected_file="$test_case_dir/$test_case/out.clj"
+
+    info "> $EDITOR: $test_case"
+
+    if [ -f "$test_case_dir/$test_case/SKIP" ]; then
+        test_skip "$test_case"
+    else
+        actual_file="$tmp_dir/$test_case.clj"
+        cp "$in_file" "$actual_file"
+
+        # Override the default test commands with a `test.vim` file.
+        test_script="$test_case_dir/$test_case/test.vim"
+        if [ -f "$test_script" ]; then
+            test_cmd=('-S' "$test_script")
+        else
+            test_cmd=('+normal! gg=G')
+        fi
+
+        "$EDITOR" "${extra_opts[@]}" --clean -EsNXnu test-vimrc.vim \
+            "${test_cmd[@]}" '+xall!' -- "$actual_file"
+
+        diff --color=always -u "$expected_file" "$actual_file"
+
+        [ $? -eq 0 ] && test_pass "$test_case" || test_fail "$test_case"
+    fi
+}
+
+for tcase in $test_case_dir/*/; do
+    run_test_case "$(basename "$tcase")"
+done
+
+printf "passed: $C_GREEN%s$C_RESET, failed: $C_RED%s$C_RESET, skipped: $C_YELLOW%s$C_RESET\n" \
+    "${#PASSED[@]}" "${#FAILED[@]}" "${#SKIPPED[@]}"
+
+# If none passed, or some failed, exit with error.
+if [ ${#PASSED[@]} -eq 0 ] || [ ${#FAILED[@]} -gt 0 ]; then
+    abort 'Failed test cases.'
+fi
